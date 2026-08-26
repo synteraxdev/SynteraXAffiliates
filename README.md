@@ -42,9 +42,12 @@ Required secrets in `.env.local` / Vercel:
 
 Optional non-production demo login: `SYNTERAX_DEV_LOGIN=1`.
 
-Redirect URI that must be registered on the OAuth client:
+Production URL: https://affiliates.synterax.io
 
-`{origin}/api/auth/callback/synterax`
+Redirect URIs registered on the OAuth client:
+
+- `http://localhost:3000/api/auth/callback/synterax`
+- `https://affiliates.synterax.io/api/auth/callback/synterax`
 
 ## Tracking
 
