@@ -2,7 +2,7 @@
 -- Application access uses the service role. RLS is enabled with no public policies
 -- so the Data API cannot be used with the publishable key.
 
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 create table public.profiles (
   id uuid primary key,

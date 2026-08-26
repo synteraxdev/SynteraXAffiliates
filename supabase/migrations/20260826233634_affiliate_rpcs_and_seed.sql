@@ -153,7 +153,7 @@ create or replace function public.record_click(
 returns jsonb
 language plpgsql
 security definer
-set search_path to 'public'
+set search_path to 'public', 'extensions'
 as $$
 declare
   offer public.offers;
@@ -206,7 +206,7 @@ begin
     end if;
   end if;
 
-  new_click := encode(gen_random_bytes(16), 'hex');
+  new_click := encode(extensions.gen_random_bytes(16), 'hex');
   dest := public.build_offer_destination(offer, trim(p_ref_slug), new_click, p_origin, p_sub1, p_sub2, p_sub3);
 
   insert into public.clicks (click_id, offer_id, promoter_id, landing_url, user_agent, referer, ip_hash, country, device, sub1, sub2, sub3, flagged)
@@ -388,7 +388,7 @@ insert into public.offers (
 on conflict (slug) do nothing;
 
 insert into public.offer_secrets (offer_id, secret)
-select o.id, encode(gen_random_bytes(24), 'hex')
+select o.id, encode(extensions.gen_random_bytes(24), 'hex')
 from public.offers o
 where not exists (select 1 from public.offer_secrets s where s.offer_id = o.id);
 
