@@ -26,6 +26,15 @@ export function OfferForm({ offer }: { offer?: Offer }) {
         <Label htmlFor="destination_value">Destination</Label>
         <Input id="destination_value" name="destination_value" defaultValue={offer?.destination_value || "/"} />
       </div>
+      <div className="space-y-2 md:col-span-2">
+        <Label htmlFor="preview_image_url">Preview screenshot URL</Label>
+        <Input
+          id="preview_image_url"
+          name="preview_image_url"
+          defaultValue={offer?.preview_image_url || ""}
+          placeholder="/offers/membership.png"
+        />
+      </div>
       <SelectField label="Link style" name="link_style" defaultValue={offer?.link_style || "query"} options={["query", "path", "none"]} />
       <Field label="Ref param" name="ref_param" defaultValue={offer?.ref_param || "ref"} />
       <SelectField

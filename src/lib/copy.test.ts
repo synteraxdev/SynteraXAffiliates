@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultShareMessage, earnInPlainEnglish, notificationLabel, whoCanJoin } from "@/lib/copy";
+import { defaultShareMessage, earnInPlainEnglish, notificationLabel, offerPreviewSrc, whoCanJoin } from "@/lib/copy";
 
 describe("plain-language copy", () => {
   it("explains earnings without CPA jargon", () => {
@@ -18,5 +18,12 @@ describe("plain-language copy", () => {
 
   it("builds a ready-made share message", () => {
     expect(defaultShareMessage("Membership")).toMatch(/SynteraX/);
+  });
+
+  it("uses a stored preview or the local screenshot for that offer", () => {
+    expect(offerPreviewSrc({ slug: "membership", preview_image_url: "https://cdn.example/a.png" })).toBe(
+      "https://cdn.example/a.png",
+    );
+    expect(offerPreviewSrc({ slug: "membership" })).toBe("/offers/membership.png");
   });
 });
