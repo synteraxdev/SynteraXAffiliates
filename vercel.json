@@ -1,4 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "alias": ["affiliates.synterax.io"]
+  "alias": ["affiliates.synterax.io"],
+  "crons": [
+    {
+      "path": "/api/cron/release-holds",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

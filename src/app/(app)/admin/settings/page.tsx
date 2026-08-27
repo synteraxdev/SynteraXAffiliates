@@ -12,7 +12,9 @@ export default async function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-3xl font-semibold">Program settings</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Defaults for cookies, payout thresholds, and fraud limits.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Hold window, smartlink fallback, attribution default, and payout threshold.
+        </p>
       </div>
       <Card className="p-5">
         <form action={saveSettings} className="grid gap-4 md:grid-cols-2">
@@ -25,8 +27,20 @@ export default async function SettingsPage() {
             <Input id="cookie_hours" name="cookie_hours" type="number" defaultValue={settings.cookie_hours} />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="hold_days">Hold days (7–30 typical)</Label>
+            <Input id="hold_days" name="hold_days" type="number" defaultValue={settings.hold_days ?? 14} />
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="min_payout_usd">Minimum payout USD</Label>
             <Input id="min_payout_usd" name="min_payout_usd" type="number" step="0.01" defaultValue={settings.min_payout_usd} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="smartlink_fallback_slug">Smartlink fallback offer slug</Label>
+            <Input
+              id="smartlink_fallback_slug"
+              name="smartlink_fallback_slug"
+              defaultValue={settings.smartlink_fallback_slug || "lander"}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="default_attribution">Default attribution</Label>
@@ -38,6 +52,7 @@ export default async function SettingsPage() {
             >
               <option value="last_click">last_click</option>
               <option value="first_click">first_click</option>
+              <option value="linear">linear</option>
             </select>
           </div>
           <div className="space-y-2">
@@ -51,7 +66,7 @@ export default async function SettingsPage() {
               defaultChecked={settings.auto_approve_conversions}
               className="h-4 w-4 accent-primary"
             />
-            Auto-approve conversions
+            Auto-approve conversions after the hold window
           </label>
           <div>
             <Button type="submit">Save settings</Button>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { recordPostback } from "@/lib/data";
+import { flushOutboundPostbacks } from "@/lib/outbound";
 
 function pick(source: Record<string, string>, keys: string[]): string | undefined {
   for (const key of keys) {
@@ -43,7 +44,9 @@ async function handle(request: Request) {
       externalId: pick(merged, ["external_id", "txn_id", "order_id"]),
       amountUsd: Number(pick(merged, ["amount", "amount_usd", "payout"]) || 0),
       status: pick(merged, ["status"]) || "pending",
+      coupon: pick(merged, ["coupon", "coupon_code", "p_coupon"]),
     });
+    await flushOutboundPostbacks();
     return NextResponse.json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "postback_failed";

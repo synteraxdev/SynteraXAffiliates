@@ -2,15 +2,16 @@ import Link from "next/link";
 import { StatCard } from "@/components/stat-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { dashboardStats, listAffiliates, listFraudEvents, listVisibleOffers } from "@/lib/data";
+import { dashboardStats, listAffiliates, listApplications, listFraudEvents, listVisibleOffers } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 
 export default async function AdminHomePage() {
-  const [stats, offers, affiliates, fraud] = await Promise.all([
+  const [stats, offers, affiliates, fraud, applications] = await Promise.all([
     dashboardStats(),
     listVisibleOffers(true),
     listAffiliates(),
     listFraudEvents(),
+    listApplications({ status: "pending" }),
   ]);
 
   return (
@@ -48,6 +49,13 @@ export default async function AdminHomePage() {
           <p className="mt-2 font-heading text-3xl">{stats.pending}</p>
           <Button asChild className="mt-4" variant="outline">
             <Link href="/admin/conversions">Review queue</Link>
+          </Button>
+        </Card>
+        <Card className="p-5">
+          <p className="text-sm text-muted-foreground">Offer applications</p>
+          <p className="mt-2 font-heading text-3xl">{applications.length}</p>
+          <Button asChild className="mt-4" variant="outline">
+            <Link href="/admin/applications">Review access</Link>
           </Button>
         </Card>
       </div>
