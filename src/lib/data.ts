@@ -23,12 +23,16 @@ export type Offer = {
   conversion_cap: number | null;
   daily_conversion_cap: number | null;
   allowed_countries: string[] | null;
+  allowed_devices: string[] | null;
   preview_image_url: string | null;
   terms: string | null;
   cta_label: string;
   is_active: boolean;
   member_visible: boolean;
   requires_approval: boolean;
+  smartlink_enabled: boolean;
+  smartlink_weight: number;
+  hold_days: number | null;
   sort_order: number;
 };
 
@@ -42,6 +46,10 @@ export type Profile = {
   referral_slug: string | null;
   payout_method: string;
   payout_details: Record<string, unknown>;
+  tier_id?: string | null;
+  postback_url?: string | null;
+  postback_method?: string | null;
+  partner_tiers?: { slug: string; name: string } | null;
 };
 
 export async function upsertSsoProfile(input: {
@@ -99,6 +107,28 @@ export async function getOfferById(id: string): Promise<Offer | null> {
   return (data as Offer) || null;
 }
 
+export type ClickResult =
+  | {
+      ok: true;
+      click_id: string;
+      destination_url: string;
+      ref: string;
+      offer_slug: string;
+      flagged: boolean;
+      remaining_daily_cap?: number | null;
+    }
+  | {
+      ok: false;
+      blocked: true;
+      reason: string;
+      offer_slug?: string;
+      offer_name?: string;
+      country?: string | null;
+      device?: string | null;
+      allowed_countries?: string[];
+      allowed_devices?: string[];
+    };
+
 export async function recordClick(input: {
   offerSlug: string;
   ref: string;
@@ -111,7 +141,8 @@ export async function recordClick(input: {
   sub1?: string;
   sub2?: string;
   sub3?: string;
-}) {
+  visitorId?: string;
+}): Promise<ClickResult> {
   const db = getServiceDb();
   const { data, error } = await db.rpc("record_click", {
     p_offer_slug: input.offerSlug,
@@ -125,9 +156,21 @@ export async function recordClick(input: {
     p_sub1: input.sub1 ?? null,
     p_sub2: input.sub2 ?? null,
     p_sub3: input.sub3 ?? null,
+    p_visitor_id: input.visitorId ?? null,
   });
   if (error) throw new Error(error.message);
-  return data as { click_id: string; destination_url: string; ref: string; offer_slug: string; flagged: boolean };
+  return data as ClickResult;
+}
+
+export async function resolveSmartlink(input: { ref: string; country?: string; device?: string }) {
+  const db = getServiceDb();
+  const { data, error } = await db.rpc("resolve_smartlink", {
+    p_ref_slug: input.ref,
+    p_country: input.country ?? null,
+    p_device: input.device ?? null,
+  });
+  if (error) throw new Error(error.message);
+  return data as { ok: boolean; offer_slug: string; fallback?: boolean };
 }
 
 export async function recordPostback(input: {
@@ -138,6 +181,7 @@ export async function recordPostback(input: {
   externalId?: string;
   amountUsd?: number;
   status?: string;
+  coupon?: string;
 }) {
   const db = getServiceDb();
   const { data, error } = await db.rpc("record_postback", {
@@ -148,6 +192,7 @@ export async function recordPostback(input: {
     p_external_id: input.externalId ?? null,
     p_amount_usd: input.amountUsd ?? 0,
     p_status: input.status ?? "pending",
+    p_coupon: input.coupon ?? null,
   });
   if (error) throw new Error(error.message);
   return data;
@@ -183,6 +228,7 @@ export async function dashboardStats(promoterId?: string) {
   const [{ count: clickCount }, { data: conversions }] = await Promise.all([clickQuery, convQuery]);
   const rows = conversions || [];
   const approved = rows.filter((row) => row.status === "approved" || row.status === "paid");
+  const payable = rows.filter((row) => row.status === "approved");
   const pending = rows.filter((row) => row.status === "pending");
   const paid = rows.filter((row) => row.status === "paid");
   const commission = (list: typeof rows) => list.reduce((sum, row) => sum + Number(row.commission_usd || 0), 0);
@@ -193,6 +239,7 @@ export async function dashboardStats(promoterId?: string) {
     approved: approved.length,
     pendingEarnings: commission(pending),
     approvedEarnings: commission(approved),
+    availableEarnings: commission(payable),
     paidEarnings: commission(paid),
   };
 }
@@ -238,7 +285,7 @@ export async function offerPerformance(promoterId?: string) {
       const [{ count }, { data: conversions }] = await Promise.all([clickQuery, convQuery]);
       const rows = conversions || [];
       const commission = rows
-        .filter((row) => row.status !== "rejected")
+        .filter((row) => !["rejected", "refunded", "clawed_back"].includes(String(row.status)))
         .reduce((sum, row) => sum + Number(row.commission_usd || 0), 0);
       return {
         ...offer,
@@ -272,9 +319,111 @@ export async function listPayouts(promoterId?: string) {
 
 export async function listAffiliates() {
   const db = getServiceDb();
-  const { data, error } = await db.from("profiles").select("*").order("created_at", { ascending: false });
+  const { data, error } = await db
+    .from("profiles")
+    .select("*, partner_tiers(slug, name)")
+    .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data || []) as Profile[];
+}
+
+export async function listTiers() {
+  const db = getServiceDb();
+  const { data, error } = await db.from("partner_tiers").select("*").order("rank");
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function getProfile(id: string): Promise<Profile | null> {
+  const db = getServiceDb();
+  const { data, error } = await db.from("profiles").select("*, partner_tiers(slug, name)").eq("id", id).maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data as Profile) || null;
+}
+
+export async function listNotifications(profileId: string, limit = 30) {
+  const db = getServiceDb();
+  const { data, error } = await db
+    .from("notifications")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function unreadNotificationCount(profileId: string) {
+  const db = getServiceDb();
+  const { count, error } = await db
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", profileId)
+    .is("read_at", null);
+  if (error) throw new Error(error.message);
+  return count || 0;
+}
+
+export async function listApplications(opts?: { offerId?: string; profileId?: string; status?: string }) {
+  const db = getServiceDb();
+  let query = db
+    .from("offer_applications")
+    .select("*, offers(name, slug, terms), profiles!offer_applications_profile_id_fkey(username, email, referral_slug)")
+    .order("created_at", { ascending: false });
+  if (opts?.offerId) query = query.eq("offer_id", opts.offerId);
+  if (opts?.profileId) query = query.eq("profile_id", opts.profileId);
+  if (opts?.status) query = query.eq("status", opts.status);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function getOfferAccess(offerId: string, profileId: string) {
+  const db = getServiceDb();
+  const [{ data: access }, { data: application }] = await Promise.all([
+    db.from("offer_access").select("offer_id").eq("offer_id", offerId).eq("profile_id", profileId).maybeSingle(),
+    db.from("offer_applications").select("*").eq("offer_id", offerId).eq("profile_id", profileId).maybeSingle(),
+  ]);
+  return {
+    allowed: Boolean(access),
+    application: application || null,
+  };
+}
+
+export async function offerDailyCap(offerId: string, dailyCap: number | null) {
+  if (dailyCap == null) return null;
+  const db = getServiceDb();
+  const start = new Date();
+  start.setUTCHours(0, 0, 0, 0);
+  const { count } = await db
+    .from("conversions")
+    .select("id", { count: "exact", head: true })
+    .eq("offer_id", offerId)
+    .gte("created_at", start.toISOString())
+    .not("status", "in", '("rejected","refunded","clawed_back")');
+  return Math.max(dailyCap - (count || 0), 0);
+}
+
+export async function listCoupons(opts: { promoterId?: string; offerId?: string }) {
+  const db = getServiceDb();
+  let query = db.from("coupons").select("*, offers(name, slug)").order("created_at", { ascending: false });
+  if (opts.promoterId) query = query.eq("promoter_id", opts.promoterId);
+  if (opts.offerId) query = query.eq("offer_id", opts.offerId);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function listQueuedOutbound(limit = 20) {
+  const db = getServiceDb();
+  const { data, error } = await db
+    .from("outbound_postbacks")
+    .select("*")
+    .eq("status", "queued")
+    .order("created_at")
+    .limit(limit);
+  if (error) throw new Error(error.message);
+  return data || [];
 }
 
 export async function getSettings() {
@@ -289,6 +438,61 @@ export async function listFraudEvents() {
   const { data, error } = await db.from("fraud_events").select("*, offers(name, slug)").order("created_at", { ascending: false }).limit(100);
   if (error) throw new Error(error.message);
   return data || [];
+}
+
+export async function notifyUser(input: {
+  profileId: string;
+  kind: string;
+  title: string;
+  body?: string;
+  entity?: string;
+  entityId?: string;
+}) {
+  const db = getServiceDb();
+  const { error } = await db.rpc("notify_user", {
+    p_profile_id: input.profileId,
+    p_kind: input.kind,
+    p_title: input.title,
+    p_body: input.body ?? null,
+    p_entity: input.entity ?? null,
+    p_entity_id: input.entityId ?? null,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function notifyAdmins(input: {
+  kind: string;
+  title: string;
+  body?: string;
+  entity?: string;
+  entityId?: string;
+}) {
+  const db = getServiceDb();
+  const { error } = await db.rpc("notify_admins", {
+    p_kind: input.kind,
+    p_title: input.title,
+    p_body: input.body ?? null,
+    p_entity: input.entity ?? null,
+    p_entity_id: input.entityId ?? null,
+  });
+  if (error) throw new Error(error.message);
+}
+
+export async function reviewConversion(input: {
+  id: string;
+  status: "approved" | "rejected" | "paid" | "refunded" | "clawed_back";
+  reason?: string;
+  actorId?: string;
+}) {
+  const db = getServiceDb();
+  const { data, error } = await db.rpc("review_conversion", {
+    p_id: input.id,
+    p_status: input.status,
+    p_reason: input.reason ?? null,
+    p_actor: input.actorId ?? null,
+  });
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 export async function getOfferSecret(offerId: string): Promise<string | null> {
@@ -333,7 +537,9 @@ export async function reportByDay(promoterId?: string, days = 14) {
     const row = map.get(date);
     if (row) {
       row.conversions += 1;
-      if (conversion.status !== "rejected") row.commission += Number(conversion.commission_usd || 0);
+      if (!["rejected", "refunded", "clawed_back"].includes(String(conversion.status))) {
+        row.commission += Number(conversion.commission_usd || 0);
+      }
     }
   }
   return [...map.values()];

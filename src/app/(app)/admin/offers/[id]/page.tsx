@@ -55,13 +55,18 @@ export default async function EditOfferPage({ params }: { params: Promise<{ id: 
             <select id="kind" name="kind" className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
               <option value="text">text</option>
               <option value="email">email</option>
-              <option value="html">html</option>
+              <option value="html">html / banner</option>
               <option value="image">image</option>
             </select>
           </div>
           <div className="space-y-2">
             <Label htmlFor="body">Body</Label>
-            <Textarea id="body" name="body" rows={4} />
+            <Textarea
+              id="body"
+              name="body"
+              rows={4}
+              placeholder="Use {{link}} {{ref}} {{offer}} {{utm}} — we bake the affiliate /go URL on copy."
+            />
           </div>
           <Button type="submit">Add creative</Button>
         </form>

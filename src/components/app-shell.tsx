@@ -2,6 +2,8 @@ import Link from "next/link";
 import {
   BadgeDollarSign,
   BarChart3,
+  Bell,
+  ClipboardCheck,
   Flag,
   LayoutDashboard,
   Link2,
@@ -31,11 +33,13 @@ const userNav = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
   { href: "/payouts", label: "Payouts", icon: Wallet },
   { href: "/tools", label: "Tracking tools", icon: Wrench },
+  { href: "/notifications", label: "Notifications", icon: Bell },
 ];
 
 const adminNav = [
   { href: "/admin", label: "Admin home", icon: LayoutDashboard },
   { href: "/admin/offers", label: "Manage offers", icon: Megaphone },
+  { href: "/admin/applications", label: "Offer applications", icon: ClipboardCheck },
   { href: "/admin/conversions", label: "Review conversions", icon: BadgeDollarSign },
   { href: "/admin/affiliates", label: "Affiliates", icon: Users },
   { href: "/admin/payouts", label: "Payout queue", icon: Wallet },
@@ -46,9 +50,11 @@ const adminNav = [
 
 export function AppShell({
   user,
+  unreadCount = 0,
   children,
 }: {
   user: SessionUser;
+  unreadCount?: number;
   children: React.ReactNode;
 }) {
   const admin = isAdmin(user);
@@ -56,13 +62,13 @@ export function AppShell({
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar/90 p-4 lg:flex lg:flex-col">
-        <BrandWordmark />
+        <BrandWordmark href="/dashboard" />
         <Badge variant="secondary" className="mt-4 w-fit text-[11px]">
           {roleLabel(user.role)}
         </Badge>
         <nav className="mt-6 flex flex-col gap-1">
           {userNav.map((item) => (
-            <NavLink key={item.href} {...item} />
+            <NavLink key={item.href} {...item} badge={item.href === "/notifications" ? unreadCount : 0} />
           ))}
         </nav>
         {admin ? (
@@ -96,8 +102,15 @@ export function AppShell({
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border/70 px-4 py-3 lg:hidden">
-          <BrandWordmark compact />
-          <Flag className="h-4 w-4 text-primary" />
+          <BrandWordmark compact href="/dashboard" />
+          <Link href="/notifications" className="relative">
+            <Flag className="h-4 w-4 text-primary" />
+            {unreadCount ? (
+              <span className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
+                {unreadCount}
+              </span>
+            ) : null}
+          </Link>
         </header>
         <main className="flex-1 px-4 py-6 sm:px-8">{children}</main>
       </div>
@@ -109,10 +122,12 @@ function NavLink({
   href,
   label,
   icon: Icon,
+  badge = 0,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: number;
 }) {
   return (
     <Link
@@ -122,7 +137,12 @@ function NavLink({
       )}
     >
       <Icon className="h-4 w-4" />
-      {label}
+      <span className="flex-1">{label}</span>
+      {badge ? (
+        <Badge variant="secondary" className="h-5 min-w-5 justify-center px-1 text-[10px]">
+          {badge}
+        </Badge>
+      ) : null}
     </Link>
   );
 }

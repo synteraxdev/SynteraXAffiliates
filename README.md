@@ -18,13 +18,21 @@ Schema and RPCs are in `supabase/migrations/`. They are already applied on the d
 ## Features
 
 - SynteraX OIDC SSO (`admin` / `company` vs `distributor` / `employee`)
-- Offer marketplace with CPA, CPC, CPL, RevShare, and hybrid payouts
+- Offer marketplace with apply / terms / per-offer approval and a public `/marketplace` wall
+- Partner tiers (Bronze / Silver / Gold) plus per-affiliate payout overrides
 - Tracking links with sub IDs: `/go/{offer}/{ref}`
+- Network smartlink `/go/network/{ref}` (geo, device, weight, EPC, cap) with lander trafficback
+- Geo / device enforcement on `/go` with a friendly `/blocked` page and remaining daily cap in UI
+- Hold (7–30 days), admin approve/reject, refund unpaid commission, clawback paid rows
+- First-click / last-click / linear attribution from the raw click chain (`sx_vid`)
+- Inbound S2S (`/t/postback`, coupon codes) and outbound affiliate postbacks (`{clickid}`, `{payout}`, `{status}`)
+- In-app notifications: new offer, conversion approved, payout sent, fraud flag
+- Vanity / coupon codes when cookies fail
+- Creatives that bake `/go/...`, UTM presets, QR, and copy kits
 - Click logging, velocity fraud flags, daily/total caps
-- S2S postback (`/t/postback`) and 1×1 pixel (`/t/pixel`)
 - Duplicate `external_id` protection
-- Affiliate dashboard, reports, creatives, payout requests
-- Admin offer CRUD, conversion review, payout approval, fraud queue, program settings
+- Affiliate dashboard, reports, payout requests
+- Admin offer CRUD, applications, conversion review, payout approval, fraud queue, program settings
 
 ## Local setup
 
@@ -53,6 +61,10 @@ Redirect URIs registered on the OAuth client:
 
 ```
 GET /go/{offerSlug}/{ref}?sub1=&sub2=&sub3=
-GET /t/postback?offer=&secret=&click_id=&ref=&external_id=&amount=&status=
+GET /go/network/{ref}
+GET /t/postback?offer=&secret=&click_id=&ref=&external_id=&amount=&status=&coupon=
 GET /t/pixel?click_id=&external_id=&amount=
+GET /api/cron/release-holds
 ```
+
+Hourly cron releases expired holds and flushes outbound tracker postbacks.

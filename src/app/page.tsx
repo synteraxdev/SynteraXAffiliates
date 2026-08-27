@@ -31,7 +31,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
-        <BrandWordmark />
+        <BrandWordmark size="lg" />
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost">
             <Link href="/login">Sign in</Link>
@@ -61,7 +61,7 @@ export default function LandingPage() {
                 </a>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/login">How SSO works</Link>
+                <Link href="/marketplace">Browse offer wall</Link>
               </Button>
             </div>
           </div>
@@ -70,7 +70,7 @@ export default function LandingPage() {
             <div className="mt-4 space-y-3 font-mono text-sm">
               <Row k="Offers" v="Membership · Card · XFLOW" />
               <Row k="Models" v="CPA · CPC · RevShare · Hybrid" />
-              <Row k="Attribution" v="Last click + cookie window" />
+              <Row k="Attribution" v="First / last / linear" />
               <Row k="Identity" v="synterax.io OIDC" />
             </div>
           </Card>

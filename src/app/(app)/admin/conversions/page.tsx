@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { listConversions } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 import { formatDateTime } from "@/lib/format";
+import { holdLabel } from "@/lib/network";
 
 export default async function AdminConversionsPage() {
   const conversions = await listConversions({ limit: 150 });
@@ -14,7 +15,9 @@ export default async function AdminConversionsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-3xl font-semibold">Conversion review</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Approve, reject, or mark conversions paid.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Conversions start pending on a hold. Approve, reject, refund unpaid commission, or claw back paid rows.
+        </p>
       </div>
       <Card className="p-5">
         <Table>
@@ -24,7 +27,7 @@ export default async function AdminConversionsPage() {
               <TableHead>Affiliate</TableHead>
               <TableHead>Offer</TableHead>
               <TableHead>Commission</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Hold / status</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -36,12 +39,22 @@ export default async function AdminConversionsPage() {
                 <TableCell>{row.offers?.name}</TableCell>
                 <TableCell>{formatMoney(row.commission_usd)}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{row.status}</Badge>
+                  <Badge variant="secondary">{holdLabel(row.held_until, row.status)}</Badge>
                 </TableCell>
                 <TableCell className="space-x-2">
-                  <InlineAction id={row.id} status="approved" />
-                  <InlineAction id={row.id} status="rejected" />
-                  <InlineAction id={row.id} status="paid" />
+                  {row.status === "pending" ? (
+                    <>
+                      <InlineAction id={row.id} status="approved" />
+                      <InlineAction id={row.id} status="rejected" />
+                    </>
+                  ) : null}
+                  {row.status === "approved" ? (
+                    <>
+                      <InlineAction id={row.id} status="paid" />
+                      <InlineAction id={row.id} status="refunded" />
+                    </>
+                  ) : null}
+                  {row.status === "paid" ? <InlineAction id={row.id} status="clawed_back" /> : null}
                 </TableCell>
               </TableRow>
             ))}
@@ -52,7 +65,13 @@ export default async function AdminConversionsPage() {
   );
 }
 
-function InlineAction({ id, status }: { id: string; status: "approved" | "rejected" | "paid" }) {
+function InlineAction({
+  id,
+  status,
+}: {
+  id: string;
+  status: "approved" | "rejected" | "paid" | "refunded" | "clawed_back";
+}) {
   return (
     <form
       action={async () => {
@@ -62,7 +81,7 @@ function InlineAction({ id, status }: { id: string; status: "approved" | "reject
       className="inline"
     >
       <Button type="submit" size="sm" variant="outline">
-        {status}
+        {status.replace("_", " ")}
       </Button>
     </form>
   );

@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { listConversions } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 import { formatDateTime } from "@/lib/format";
+import { holdLabel } from "@/lib/network";
 import { getSession } from "@/lib/session";
 
 export default async function ConversionsPage() {
@@ -15,7 +16,10 @@ export default async function ConversionsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-3xl font-semibold">Conversions</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Attributed sales, signups, and postbacks on your traffic.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          New conversions sit on hold before they become payable. Refunds and clawbacks reverse unpaid or paid
+          commission.
+        </p>
       </div>
       <Card className="p-5">
         <Table>
@@ -38,7 +42,13 @@ export default async function ConversionsPage() {
                 <TableCell>{formatMoney(row.amount_usd)}</TableCell>
                 <TableCell>{formatMoney(row.commission_usd)}</TableCell>
                 <TableCell>
-                  <Badge variant={row.status === "rejected" ? "destructive" : "secondary"}>{row.status}</Badge>
+                  <Badge
+                    variant={
+                      ["rejected", "refunded", "clawed_back"].includes(row.status) ? "destructive" : "secondary"
+                    }
+                  >
+                    {holdLabel(row.held_until, row.status)}
+                  </Badge>
                 </TableCell>
               </TableRow>
             ))}

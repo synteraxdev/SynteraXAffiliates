@@ -1,23 +1,50 @@
+import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export function SynteraMark({ className }: { className?: string }) {
+type LogoVariant = "light" | "dark";
+
+const logoSrc: Record<LogoVariant, string> = {
+  light: "/logo-light.png",
+  dark: "/logo-white-theme.png",
+};
+
+export function SynteraLogo({
+  className,
+  variant = "light",
+  priority = false,
+}: {
+  className?: string;
+  variant?: LogoVariant;
+  priority?: boolean;
+}) {
   return (
-    <svg viewBox="0 0 512 512" className={cn("text-primary", className)} fill="currentColor" aria-hidden>
-      <path d="M140 90 L220 170 L256 206 L292 170 L372 90 L410 90 L292 208 L256 244 L220 208 L102 90 Z" />
-      <path d="M140 422 L220 342 L256 306 L292 342 L372 422 L410 422 L292 304 L256 268 L220 304 L102 422 Z" />
-      <circle cx="256" cy="256" r="24" />
-    </svg>
+    <Image
+      src={logoSrc[variant]}
+      alt="SynteraX"
+      width={731}
+      height={185}
+      priority={priority}
+      className={cn("h-12 w-auto shrink-0 object-contain", className)}
+    />
   );
 }
 
-export function BrandWordmark({ compact = false }: { compact?: boolean }) {
+export function BrandWordmark({
+  compact = false,
+  href = "/",
+  size = "md",
+}: {
+  compact?: boolean;
+  href?: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const height = compact || size === "sm" ? "h-7" : size === "lg" ? "h-12" : "h-9";
+
   return (
-    <div className="flex items-center gap-2.5">
-      <SynteraMark className="h-7 w-7" />
-      <div className="leading-tight">
-        <p className="font-heading text-sm font-semibold tracking-wide">SynteraX</p>
-        {!compact && <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Affiliates</p>}
-      </div>
-    </div>
+    <Link href={href} className="inline-flex flex-col items-start gap-0.5">
+      <SynteraLogo className={height} priority />
+      <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Affiliates</span>
+    </Link>
   );
 }

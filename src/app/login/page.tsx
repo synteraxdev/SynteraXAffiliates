@@ -17,7 +17,7 @@ export default async function LoginPage({
     <div className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-6 py-12">
       <div className="grid w-full gap-10 lg:grid-cols-2 lg:items-center">
         <div>
-          <BrandWordmark />
+          <BrandWordmark size="lg" />
           <h1 className="mt-8 font-heading text-4xl font-semibold leading-tight">
             Build. Earn. Grow.
             <br />

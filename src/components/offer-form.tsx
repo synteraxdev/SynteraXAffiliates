@@ -48,11 +48,23 @@ export function OfferForm({ offer }: { offer?: Offer }) {
         label="Attribution"
         name="attribution"
         defaultValue={offer?.attribution || "last_click"}
-        options={["last_click", "first_click"]}
+        options={["last_click", "first_click", "linear"]}
       />
+      <Field label="Hold days (blank = program default)" name="hold_days" type="number" defaultValue={offer?.hold_days != null ? String(offer.hold_days) : ""} />
       <Field label="Click cap" name="click_cap" type="number" defaultValue={offer?.click_cap ? String(offer.click_cap) : ""} />
       <Field label="Conversion cap" name="conversion_cap" type="number" defaultValue={offer?.conversion_cap ? String(offer.conversion_cap) : ""} />
       <Field label="Daily conversion cap" name="daily_conversion_cap" type="number" defaultValue={offer?.daily_conversion_cap ? String(offer.daily_conversion_cap) : ""} />
+      <Field
+        label="Allowed countries (ISO, comma-separated)"
+        name="allowed_countries"
+        defaultValue={(offer?.allowed_countries || []).join(",")}
+      />
+      <Field
+        label="Allowed devices (desktop,mobile,tablet)"
+        name="allowed_devices"
+        defaultValue={(offer?.allowed_devices || []).join(",")}
+      />
+      <Field label="Smartlink weight" name="smartlink_weight" type="number" defaultValue={String(offer?.smartlink_weight ?? 100)} />
       <Field label="CTA label" name="cta_label" defaultValue={offer?.cta_label || "Get link"} />
       <Field label="Sort order" name="sort_order" type="number" defaultValue={String(offer?.sort_order ?? 100)} />
       <div className="space-y-2 md:col-span-2">
@@ -62,6 +74,7 @@ export function OfferForm({ offer }: { offer?: Offer }) {
       <Toggle name="is_active" label="Active" defaultChecked={offer?.is_active ?? true} />
       <Toggle name="member_visible" label="Visible to affiliates" defaultChecked={offer?.member_visible ?? true} />
       <Toggle name="requires_approval" label="Private / approval required" defaultChecked={offer?.requires_approval ?? false} />
+      <Toggle name="smartlink_enabled" label="Include in /go/network smartlink" defaultChecked={offer?.smartlink_enabled ?? true} />
       <div className="md:col-span-2">
         <Button type="submit">{offer ? "Save offer" : "Create offer"}</Button>
       </div>

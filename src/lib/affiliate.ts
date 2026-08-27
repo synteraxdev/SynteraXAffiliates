@@ -1,7 +1,7 @@
 export type PayoutModel = "none" | "cpa" | "cpc" | "cpl" | "revshare" | "hybrid";
 export type DestinationKind = "internal" | "external" | "sso_card";
 export type LinkStyle = "query" | "path" | "none";
-export type ConversionStatus = "pending" | "approved" | "rejected" | "paid";
+export type ConversionStatus = "pending" | "approved" | "rejected" | "paid" | "refunded" | "clawed_back";
 
 export type OfferInput = {
   destinationKind: DestinationKind;
