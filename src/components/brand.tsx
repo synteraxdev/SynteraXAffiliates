@@ -32,21 +32,22 @@ export function SynteraLogo({
 }
 
 /**
- * Card lockup proportion: badge is ~80% of the wordmark box, small
- * semibold caps, wide tracking, tight vertical padding.
+ * Card lockup proportion: badge is a compact companion to the wordmark.
+ * Mobile uses a shorter mark + tighter chip so the full lockup fits a phone header.
  */
 const lockup = {
   sm: {
-    markClassName: "h-6 w-auto",
-    badgeClassName: "h-[15px] px-1.5 text-[8px] tracking-[0.18em]",
+    markClassName: "h-5 w-auto max-w-[6.75rem] sm:h-6 sm:max-w-none",
+    badgeClassName: "h-[14px] px-1.5 text-[7px] tracking-[0.14em] sm:h-[15px] sm:text-[8px] sm:tracking-[0.18em]",
   },
   md: {
-    markClassName: "h-7 w-auto",
-    badgeClassName: "h-[19px] px-1.5 text-[9px] tracking-[0.18em]",
+    markClassName: "h-6 w-auto max-w-[7.25rem] sm:h-7 sm:max-w-none",
+    badgeClassName: "h-[15px] px-1.5 text-[8px] tracking-[0.14em] sm:h-[19px] sm:text-[9px] sm:tracking-[0.18em]",
   },
   lg: {
-    markClassName: "h-8 w-auto",
-    badgeClassName: "h-[22px] px-2 text-[10px] tracking-[0.2em]",
+    markClassName: "h-6 w-auto max-w-[7.25rem] sm:h-8 sm:max-w-none",
+    badgeClassName:
+      "h-[15px] px-1.5 text-[7.5px] tracking-[0.14em] sm:h-[22px] sm:px-2 sm:text-[10px] sm:tracking-[0.2em]",
   },
 } as const;
 
@@ -65,7 +66,7 @@ export function BrandWordmark({
 
   return (
     <Link href={href} className={cn("inline-flex min-w-0 items-center", className)} aria-label="SynteraX Affiliates">
-      <span className="inline-flex items-center gap-2 sm:gap-2.5">
+      <span className="inline-flex min-w-0 items-center gap-1.5 sm:gap-2.5">
         <SynteraLogo className={scale.markClassName} priority />
         <span
           className={cn(

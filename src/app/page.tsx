@@ -129,14 +129,14 @@ export default function LandingPage() {
             <p className="mt-3 text-sm text-muted-foreground">
               Affiliates are exclusive to SynteraX members.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Button asChild size="lg" className="w-full sm:w-auto">
                 <a href="https://synterax.io/signup">
                   Become an Affiliate
                   <ArrowRight className="h-4 w-4" />
                 </a>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                 <a href="/api/auth/login">Sign In with SynteraX</a>
               </Button>
             </div>
