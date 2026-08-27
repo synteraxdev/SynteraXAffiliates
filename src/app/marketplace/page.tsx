@@ -29,7 +29,7 @@ export default async function PublicMarketplacePage() {
           <p className="text-xs uppercase tracking-[0.18em] text-primary">Public offer wall</p>
           <h1 className="mt-2 font-heading text-4xl font-semibold">Promote SynteraX</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Browse live offers. Sign in to generate tracking links, apply to private inventory, and request payouts.
+            Browse what you can share. Sign in, copy a link, and get paid to your SynteraX Vault or in XFLOW.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
