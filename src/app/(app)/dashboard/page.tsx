@@ -1,74 +1,69 @@
 import Link from "next/link";
+import { GettingStarted } from "@/components/getting-started";
+import { HelpTip } from "@/components/help-tip";
 import { StatCard } from "@/components/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { dashboardStats, listClicks, listVisibleOffers, reportByDay } from "@/lib/data";
-import { formatMoney, payoutLabel } from "@/lib/affiliate";
-import { formatDateTime } from "@/lib/format";
+import { dashboardStats, getProfile, listClicks, listTrackingLinks, listVisibleOffers } from "@/lib/data";
+import { formatMoney } from "@/lib/affiliate";
+import { earnInPlainEnglish } from "@/lib/copy";
+import { isPayoutMethod } from "@/lib/payouts";
 import { getSession } from "@/lib/session";
 
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) return null;
-  const [stats, offers, clicks, series] = await Promise.all([
+  const [stats, offers, clicks, links, profile] = await Promise.all([
     dashboardStats(session.id),
     listVisibleOffers(false),
-    listClicks({ promoterId: session.id, limit: 8 }),
-    reportByDay(session.id, 10),
+    listClicks({ promoterId: session.id, limit: 5 }),
+    listTrackingLinks(session.id),
+    getProfile(session.id),
   ]);
 
   return (
     <div className="space-y-8">
       <div>
-        <p className="text-xs uppercase tracking-[0.18em] text-primary">Overview</p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold">Welcome back, {session.username || "affiliate"}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Your referral slug is <span className="font-mono text-foreground">{session.referralSlug}</span>. Use it on
-          every offer link.
+        <p className="text-xs uppercase tracking-[0.18em] text-primary">Home</p>
+        <h1 className="mt-2 font-heading text-3xl font-semibold">
+          Hi {session.username || "there"} — ready to share SynteraX?
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          You send people a link. If they join or buy, you earn. We pay into your SynteraX Vault in USD or as XFLOW
+          tokens.
         </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Clicks" value={String(stats.clicks)} />
-        <StatCard label="Conversions" value={String(stats.conversions)} hint={`${stats.pending} pending review`} />
-        <StatCard label="Approved earnings" value={formatMoney(stats.approvedEarnings)} />
-        <StatCard label="Pending earnings" value={formatMoney(stats.pendingEarnings)} />
+        <StatCard label="People who clicked" value={String(stats.clicks)} />
+        <StatCard
+          label="Signups waiting"
+          value={String(stats.pending)}
+          hint="We hold these a few days, like other networks"
+        />
+        <StatCard label="Ready to cash out" value={formatMoney(stats.availableEarnings)} />
+        <StatCard label="Already paid" value={formatMoney(stats.paidEarnings)} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+        <GettingStarted
+          hasLink={links.length > 0 || clicks.length > 0}
+          hasClick={clicks.length > 0}
+          hasPayoutMethod={isPayoutMethod((profile?.payout_details as { kind?: string } | undefined)?.kind)}
+        />
         <Card className="p-5">
-          <div className="flex items-center justify-between">
-            <h2 className="font-heading text-lg font-semibold">Last 10 days</h2>
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/reports">Full reports</Link>
-            </Button>
-          </div>
-          <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-10">
-            {series.map((day) => (
-              <div key={day.date} className="text-center">
-                <div
-                  className="mx-auto w-full rounded-sm bg-primary/20"
-                  style={{ height: `${Math.max(8, Math.min(72, day.clicks * 8))}px` }}
-                  title={`${day.date}: ${day.clicks} clicks`}
-                />
-                <p className="mt-2 font-mono text-[10px] text-muted-foreground">{day.date.slice(5)}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
-        <Card className="p-5">
-          <h2 className="font-heading text-lg font-semibold">Promote next</h2>
+          <h2 className="font-heading text-lg font-semibold">Pick something to share</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Each card tells you what you earn in plain English.</p>
           <div className="mt-4 space-y-3">
             {offers.slice(0, 4).map((offer) => (
-              <div key={offer.id} className="flex items-center justify-between gap-3">
+              <div key={offer.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/70 p-3">
                 <div>
                   <p className="text-sm font-medium">{offer.name}</p>
-                  <p className="text-xs text-muted-foreground">{payoutLabel(offer.payout_model)}</p>
+                  <p className="text-xs text-muted-foreground">{earnInPlainEnglish(offer)}</p>
                 </div>
-                <Button asChild size="sm" variant="outline">
-                  <Link href={`/offers/${offer.slug}`}>Open</Link>
+                <Button asChild size="sm">
+                  <Link href={`/offers/${offer.slug}`}>Get link</Link>
                 </Button>
               </div>
             ))}
@@ -77,36 +72,25 @@ export default async function DashboardPage() {
       </div>
 
       <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Recent clicks</h2>
-        <Table className="mt-4">
-          <TableHeader>
-            <TableRow>
-              <TableHead>When</TableHead>
-              <TableHead>Offer</TableHead>
-              <TableHead>Click ID</TableHead>
-              <TableHead>Status</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clicks.map((click) => (
-              <TableRow key={click.id}>
-                <TableCell>{formatDateTime(click.created_at)}</TableCell>
-                <TableCell>{click.offers?.name || "—"}</TableCell>
-                <TableCell className="font-mono text-xs">{click.click_id.slice(0, 12)}…</TableCell>
-                <TableCell>
-                  {click.flagged ? <Badge variant="destructive">Flagged</Badge> : <Badge variant="secondary">OK</Badge>}
-                </TableCell>
-              </TableRow>
-            ))}
-            {!clicks.length ? (
-              <TableRow>
-                <TableCell colSpan={4} className="text-muted-foreground">
-                  No clicks yet. Copy a link from Offers to start tracking.
-                </TableCell>
-              </TableRow>
-            ) : null}
-          </TableBody>
-        </Table>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-heading text-lg font-semibold">
+            <HelpTip label="Recent visits">A visit is counted when someone opens your share link.</HelpTip>
+          </h2>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/reports">See results</Link>
+          </Button>
+        </div>
+        <div className="mt-4 space-y-2">
+          {clicks.map((click) => (
+            <div key={click.id} className="flex items-center justify-between text-sm">
+              <span>{click.offers?.name || "Offer"}</span>
+              {click.flagged ? <Badge variant="destructive">Needs a look</Badge> : <Badge variant="secondary">Counted</Badge>}
+            </div>
+          ))}
+          {!clicks.length ? (
+            <p className="text-sm text-muted-foreground">No visits yet. Copy a link from Promote and share it.</p>
+          ) : null}
+        </div>
       </Card>
     </div>
   );
