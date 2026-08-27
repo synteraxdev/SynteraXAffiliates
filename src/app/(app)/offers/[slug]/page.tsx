@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { applyToOffer, createCoupon } from "@/app/actions/affiliate";
 import { CopyButton } from "@/components/copy-button";
@@ -110,7 +111,14 @@ export default async function OfferDetailPage({
             <p className="mt-3 text-xs text-muted-foreground">
               Smartlink: <span className="font-mono">{smartlink}</span> — routes by geo, device, weight, EPC, and cap.
             </p>
-            <img src={qrImageUrl(link)} alt="QR for tracking link" className="mt-4 h-40 w-40 rounded-md border border-border/70 bg-white p-2" />
+            <Image
+              src={qrImageUrl(link)}
+              alt="QR for tracking link"
+              width={160}
+              height={160}
+              unoptimized
+              className="mt-4 h-40 w-40 rounded-md border border-border/70 bg-white p-2"
+            />
           </Card>
 
           {offer.terms ? (
