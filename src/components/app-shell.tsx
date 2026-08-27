@@ -1,52 +1,16 @@
 import Link from "next/link";
-import {
-  BadgeDollarSign,
-  BarChart3,
-  Bell,
-  ClipboardCheck,
-  Flag,
-  LayoutDashboard,
-  Link2,
-  LogOut,
-  Megaphone,
-  Settings,
-  ShieldAlert,
-  Users,
-  Wallet,
-  Wrench,
-} from "lucide-react";
+import { LogOut } from "lucide-react";
 import { BrandWordmark } from "@/components/brand";
+import { MobileMenu, MobileTabs } from "@/components/mobile-nav";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { adminNav, userNav } from "@/lib/nav";
 import { isAdmin, type SessionUser } from "@/lib/session";
 import { roleLabel } from "@/lib/roles";
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-const userNav = [
-  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
-  { href: "/offers", label: "Promote", icon: Megaphone },
-  { href: "/links", label: "My links", icon: Link2 },
-  { href: "/conversions", label: "Earnings", icon: BadgeDollarSign },
-  { href: "/reports", label: "Results", icon: BarChart3 },
-  { href: "/payouts", label: "Cash out", icon: Wallet },
-  { href: "/tools", label: "Help", icon: Wrench },
-  { href: "/notifications", label: "Alerts", icon: Bell },
-];
-
-const adminNav = [
-  { href: "/admin", label: "Admin home", icon: LayoutDashboard },
-  { href: "/admin/offers", label: "Offers", icon: Megaphone },
-  { href: "/admin/applications", label: "Access requests", icon: ClipboardCheck },
-  { href: "/admin/conversions", label: "Approve earnings", icon: BadgeDollarSign },
-  { href: "/admin/affiliates", label: "People", icon: Users },
-  { href: "/admin/payouts", label: "Pay affiliates", icon: Wallet },
-  { href: "/admin/reports", label: "Network results", icon: BarChart3 },
-  { href: "/admin/fraud", label: "Flags", icon: ShieldAlert },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
-];
 
 export function AppShell({
   user,
@@ -103,16 +67,10 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border/70 px-4 py-3 lg:hidden">
           <BrandWordmark compact href="/dashboard" />
-          <Link href="/notifications" className="relative">
-            <Flag className="h-4 w-4 text-primary" />
-            {unreadCount ? (
-              <span className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">
-                {unreadCount}
-              </span>
-            ) : null}
-          </Link>
+          <MobileMenu isAdmin={admin} unreadCount={unreadCount} />
         </header>
-        <main className="flex-1 px-4 py-6 sm:px-8">{children}</main>
+        <main className="flex-1 px-4 py-6 pb-24 sm:px-8 lg:pb-6">{children}</main>
+        <MobileTabs />
       </div>
     </div>
   );

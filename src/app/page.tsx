@@ -1,29 +1,47 @@
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, MousePointerClick, Radio, Wallet } from "lucide-react";
+import { ArrowRight, BadgeCheck, Link2, Share2, Wallet } from "lucide-react";
 import { BrandWordmark } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
-const features = [
+const steps = [
   {
-    icon: MousePointerClick,
-    title: "Click tracking",
-    body: "Unique links per offer and affiliate, with sub IDs, device, country, and fraud velocity checks.",
+    n: "1",
+    title: "Sign in with SynteraX",
+    body: "Use the same account you already have. No extra password.",
   },
   {
-    icon: Radio,
-    title: "S2S + pixel conversions",
-    body: "Server postbacks, image pixels, and click-id attribution with duplicate protection.",
+    n: "2",
+    title: "Copy a link and share it",
+    body: "We make the link for you. Send it in a message, post, or email.",
+  },
+  {
+    n: "3",
+    title: "Get paid when people join",
+    body: "USD goes into your SynteraX Vault, or take XFLOW tokens. Those are the only two options.",
+  },
+];
+
+const features = [
+  {
+    icon: Link2,
+    title: "We count the visits",
+    body: "Every click on your link is tracked for you. You do not need ads software.",
+  },
+  {
+    icon: Share2,
+    title: "Ready-made messages",
+    body: "Copy a message, show a QR code, or tap WhatsApp / email. Sharing takes seconds.",
   },
   {
     icon: Wallet,
     title: "Paid like SynteraX",
-    body: "Cash out to your Vault in USD or take XFLOW tokens. No banks, no USDT, no extra wallets.",
+    body: "Cash out to your Vault in USD or take XFLOW tokens. No banks, no extra wallets.",
   },
   {
     icon: BadgeCheck,
-    title: "SynteraX SSO",
-    body: "No second password. Sign in with the same SynteraX account used across the network.",
+    title: "One login",
+    body: "If you can sign in at synterax.io, you can promote here.",
   },
 ];
 
@@ -47,32 +65,39 @@ export default function LandingPage() {
           <div>
             <p className="text-xs uppercase tracking-[0.22em] text-primary">SynteraX Affiliates</p>
             <h1 className="mt-4 max-w-3xl font-heading text-5xl font-semibold leading-[1.05] sm:text-6xl">
-              Promote the network. Track every click. Get paid for what converts.
+              Share SynteraX. Get paid when people join.
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-              Share a SynteraX link. If people join, you earn. We pay into your SynteraX Vault in USD or as XFLOW
-              tokens — the same places membership rewards already go.
+              Copy a link, send it to friends, and earn. We pay into your SynteraX Vault in USD or as XFLOW tokens —
+              the same places membership rewards already go.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
                 <a href="/api/auth/login">
-                  Sign in with SynteraX
+                  Start promoting
                   <ArrowRight className="h-4 w-4" />
                 </a>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/marketplace">Browse offer wall</Link>
+                <Link href="/marketplace">See what you can share</Link>
               </Button>
             </div>
           </div>
           <Card className="border-primary/20 bg-card/80 p-6">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Live program</p>
-            <div className="mt-4 space-y-3 font-mono text-sm">
-              <Row k="Offers" v="Membership · Card · XFLOW" />
-              <Row k="Models" v="CPA · CPC · RevShare · Hybrid" />
-              <Row k="Attribution" v="First / last / linear" />
-              <Row k="Identity" v="synterax.io OIDC" />
-            </div>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">How it works</p>
+            <ol className="mt-4 space-y-4">
+              {steps.map((step) => (
+                <li key={step.n} className="flex gap-3">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-primary">
+                    {step.n}
+                  </span>
+                  <div>
+                    <p className="font-medium">{step.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{step.body}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </Card>
         </section>
 
@@ -86,15 +111,6 @@ export default function LandingPage() {
           ))}
         </section>
       </main>
-    </div>
-  );
-}
-
-function Row({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 border-b border-border/60 py-2 last:border-0">
-      <span className="text-muted-foreground">{k}</span>
-      <span>{v}</span>
     </div>
   );
 }

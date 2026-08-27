@@ -17,9 +17,9 @@ export function payoutMethodLabel(method: string | null | undefined): string {
 
 export function payoutMethodHelp(method: PayoutMethod): string {
   if (method === "xflow") {
-    return "We convert your approved USD commission into XFLOW at the live SynteraX token price and credit your Token Vault. Same path membership rewards use.";
+    return "We convert your approved USD earnings into XFLOW at the live SynteraX token price and credit your Token Vault — the same place membership XFLOW already goes.";
   }
-  return "We send USD to your SynteraX E-Vault. You can spend it inside SynteraX the same way weekly commissions already arrive.";
+  return "We send USD to your SynteraX Vault. You can spend it inside SynteraX the same way weekly commissions already arrive.";
 }
 
 export function payoutDestination(method: PayoutMethod, username?: string | null) {
@@ -50,8 +50,15 @@ export function payoutStatusLabel(status: string | null | undefined): string {
 
 export function conversionStatusLabel(status: string, hold?: string): string {
   switch (status) {
-    case "pending":
-      return hold && hold !== "pending" ? hold.replace("hold", "On hold") : "Waiting for review";
+    case "pending": {
+      const match = hold?.match(/hold (\d+)([hd])/);
+      if (match) {
+        const amount = match[1];
+        const unit = match[2] === "h" ? (amount === "1" ? "hour" : "hours") : amount === "1" ? "day" : "days";
+        return `Checking — about ${amount} ${unit} left`;
+      }
+      return "Waiting for review";
+    }
     case "approved":
       return "Ready to cash out";
     case "paid":

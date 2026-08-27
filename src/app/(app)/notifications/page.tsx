@@ -2,6 +2,7 @@ import { markNotificationsRead } from "@/app/actions/affiliate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { notificationLabel } from "@/lib/copy";
 import { listNotifications } from "@/lib/data";
 import { formatDateTime } from "@/lib/format";
 import { getSession } from "@/lib/session";
@@ -34,13 +35,15 @@ export default async function NotificationsPage() {
                 <p className="font-medium">{note.title}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{note.body}</p>
               </div>
-              <Badge variant={note.read_at ? "outline" : "secondary"}>{note.kind}</Badge>
+              <Badge variant={note.read_at ? "outline" : "secondary"}>{notificationLabel(note.kind)}</Badge>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">{formatDateTime(note.created_at)}</p>
           </Card>
         ))}
         {!notifications.length ? (
-          <Card className="p-5 text-sm text-muted-foreground">No notifications yet.</Card>
+          <Card className="p-5 text-sm text-muted-foreground">
+            Nothing yet. We will post here when a signup is approved or a cash-out is sent.
+          </Card>
         ) : null}
       </div>
     </div>

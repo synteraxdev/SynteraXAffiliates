@@ -21,3 +21,32 @@ export function earnInPlainEnglish(offer: {
       return "This one is for awareness — it does not pay by default";
   }
 }
+
+export function whoCanJoin(countries?: string[] | null): string {
+  return countries?.length ? countries.join(", ") : "Anyone, worldwide";
+}
+
+export function defaultShareMessage(offerName: string): string {
+  return `I'm sharing SynteraX — ${offerName}. Join with my link:`;
+}
+
+export function notificationLabel(kind: string): string {
+  switch (kind) {
+    case "payout.requested":
+      return "Cash out";
+    case "payout.paid":
+      return "Paid";
+    case "offer.application":
+      return "Access";
+    case "offer.approved":
+      return "Approved";
+    case "offer.rejected":
+      return "Not approved";
+    case "offer.new":
+      return "New offer";
+    case "fraud.flag":
+      return "Needs a look";
+    default:
+      return "Update";
+  }
+}

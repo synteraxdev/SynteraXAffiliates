@@ -121,19 +121,19 @@ export function visitorCookieValue(existing?: string | null): string {
 export function blockedReasonCopy(reason: string): string {
   switch (reason) {
     case "geo":
-      return "This offer is not available in your country.";
+      return "This page is not available in your country. You can still try another SynteraX page.";
     case "device":
-      return "This offer is not available on your device.";
+      return "This page is not available on this device. Open it on a phone or computer instead.";
     case "daily_cap":
-      return "This offer has hit its daily conversion cap.";
+      return "This page is full for today. Try again tomorrow, or open another SynteraX page.";
     case "conversion_cap":
-      return "This offer has hit its conversion cap.";
+      return "This page has reached its limit. Try another SynteraX page.";
     case "click_cap":
-      return "This offer has hit its click cap.";
+      return "This page is too busy right now. Try another SynteraX page.";
     case "access":
-      return "This offer requires approval before you can send traffic.";
+      return "This page is invite-only right now. Try another SynteraX page.";
     default:
-      return "This offer is not available right now.";
+      return "This page is not available right now. Try another SynteraX page.";
   }
 }
 

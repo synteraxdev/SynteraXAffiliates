@@ -20,7 +20,7 @@ const jetbrains = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "SynteraX Affiliates",
-  description: "Promote SynteraX offers, track clicks and conversions, and get paid.",
+  description: "Share SynteraX, earn when people join, and get paid to your Vault or in XFLOW.",
   icons: {
     icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
     apple: [{ url: "/logo-light.png" }],

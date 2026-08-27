@@ -25,13 +25,16 @@ export default async function ReportsPage() {
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-4">
-        <StatCard label="Clicks" value={String(stats.clicks)} />
+        <StatCard label="People who clicked" value={String(stats.clicks)} />
         <StatCard
           label="Signup rate"
           value={`${conversionRate(stats.clicks, stats.conversions).toFixed(1)}%`}
-          hint="People who clicked and then converted"
+          hint="People who clicked and then signed up"
         />
-        <StatCard label="Earn per click" value={formatMoney(epc(stats.clicks, stats.approvedEarnings + stats.pendingEarnings))} />
+        <StatCard
+          label="Earned per click"
+          value={formatMoney(epc(stats.clicks, stats.approvedEarnings + stats.pendingEarnings))}
+        />
         <StatCard label="Total earned" value={formatMoney(stats.approvedEarnings + stats.pendingEarnings)} />
       </div>
       <Card className="p-5">
@@ -40,7 +43,7 @@ export default async function ReportsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Offer</TableHead>
-              <TableHead>Clicks</TableHead>
+              <TableHead>Visits</TableHead>
               <TableHead>Signups</TableHead>
               <TableHead>
                 <HelpTip label="Rate">Signups divided by clicks.</HelpTip>
@@ -67,7 +70,7 @@ export default async function ReportsPage() {
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
-              <TableHead>Clicks</TableHead>
+              <TableHead>Visits</TableHead>
               <TableHead>Signups</TableHead>
               <TableHead>Earned</TableHead>
             </TableRow>
