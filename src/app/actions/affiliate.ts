@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { getServiceDb } from "@/lib/supabase";
 import { requireSession } from "@/lib/session";
-import { getOfferById, getSettings, notifyAdmins } from "@/lib/data";
+import { getOfferById, getProfile, getSettings, notifyAdmins } from "@/lib/data";
+import { isPayoutMethod, parsePayoutMethod, payoutDestination, payoutMethodLabel } from "@/lib/payouts";
 
 export async function createTrackingLink(formData: FormData) {
   const user = await requireSession();
@@ -20,10 +21,13 @@ export async function createTrackingLink(formData: FormData) {
   revalidatePath("/links");
 }
 
-export async function requestPayout() {
+export async function requestPayout(formData?: FormData) {
   const user = await requireSession();
   const db = getServiceDb();
   const settings = await getSettings();
+  const profile = await getProfile(user.id);
+  const requested = formData ? String(formData.get("payout_method") || "") : "";
+  const method = isPayoutMethod(requested) ? requested : parsePayoutMethod(profile?.payout_method);
   const { data: conversions, error } = await db
     .from("conversions")
     .select("id, commission_usd")
@@ -49,8 +53,8 @@ export async function requestPayout() {
     .insert({
       promoter_id: user.id,
       amount_usd: amount,
-      method: "manual",
-      destination: user.email ? { email: user.email } : {},
+      method,
+      destination: payoutDestination(method, user.username),
       status: "requested",
     })
     .select("id")
@@ -66,7 +70,7 @@ export async function requestPayout() {
   await notifyAdmins({
     kind: "payout.requested",
     title: "Payout requested",
-    body: `${user.username || user.email} requested $${amount.toFixed(2)}.`,
+    body: `${user.username || user.email} requested $${amount.toFixed(2)} as ${payoutMethodLabel(method)}.`,
     entity: "payouts",
     entityId: payout.id,
   });
@@ -76,26 +80,41 @@ export async function requestPayout() {
 export async function savePayoutDetails(formData: FormData) {
   const user = await requireSession();
   const db = getServiceDb();
-  const postbackUrl = String(formData.get("postback_url") || "").trim();
-  if (postbackUrl && !/^https:\/\//i.test(postbackUrl)) {
-    throw new Error("Outbound postback URL must start with https://");
-  }
+  const method = parsePayoutMethod(formData.get("payout_method"));
   const { error } = await db
     .from("profiles")
     .update({
-      payout_method: String(formData.get("payout_method") || "manual"),
+      payout_method: method,
       payout_details: {
-        wallet: String(formData.get("wallet") || ""),
-        note: String(formData.get("note") || ""),
+        kind: method,
+        currency: method === "xflow" ? "XFLOW" : "USD",
+        network: "synterax",
       },
-      postback_url: postbackUrl || null,
-      postback_method: String(formData.get("postback_method") || "GET"),
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.id);
   if (error) throw new Error(error.message);
   revalidatePath("/payouts");
+}
+
+export async function savePostbackUrl(formData: FormData) {
+  const user = await requireSession();
+  const db = getServiceDb();
+  const postbackUrl = String(formData.get("postback_url") || "").trim();
+  if (postbackUrl && !/^https:\/\//i.test(postbackUrl)) {
+    throw new Error("Tracker URL must start with https://");
+  }
+  const { error } = await db
+    .from("profiles")
+    .update({
+      postback_url: postbackUrl || null,
+      postback_method: "GET",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
+  if (error) throw new Error(error.message);
   revalidatePath("/tools");
+  revalidatePath("/payouts");
 }
 
 export async function applyToOffer(formData: FormData) {

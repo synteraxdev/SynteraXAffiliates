@@ -1,3 +1,4 @@
+import { HelpTip } from "@/components/help-tip";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -5,6 +6,7 @@ import { listConversions } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 import { formatDateTime } from "@/lib/format";
 import { holdLabel } from "@/lib/network";
+import { conversionStatusLabel } from "@/lib/payouts";
 import { getSession } from "@/lib/session";
 
 export default async function ConversionsPage() {
@@ -15,10 +17,10 @@ export default async function ConversionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-semibold">Conversions</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          New conversions sit on hold before they become payable. Refunds and clawbacks reverse unpaid or paid
-          commission.
+        <p className="text-xs uppercase tracking-[0.18em] text-primary">Earnings</p>
+        <h1 className="mt-2 font-heading text-3xl font-semibold">What you have earned</h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          New results sit on hold for a few days. After approval they move to Cash out as Vault USD or XFLOW.
         </p>
       </div>
       <Card className="p-5">
@@ -27,10 +29,10 @@ export default async function ConversionsPage() {
             <TableRow>
               <TableHead>When</TableHead>
               <TableHead>Offer</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Commission</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>You earn</TableHead>
+              <TableHead>
+                <HelpTip label="Status">Waiting means we are still checking. Ready to cash out means it can be paid.</HelpTip>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -38,8 +40,6 @@ export default async function ConversionsPage() {
               <TableRow key={row.id}>
                 <TableCell>{formatDateTime(row.created_at)}</TableCell>
                 <TableCell>{row.offers?.name}</TableCell>
-                <TableCell className="font-mono text-xs">{row.conversion_type}</TableCell>
-                <TableCell>{formatMoney(row.amount_usd)}</TableCell>
                 <TableCell>{formatMoney(row.commission_usd)}</TableCell>
                 <TableCell>
                   <Badge
@@ -47,15 +47,15 @@ export default async function ConversionsPage() {
                       ["rejected", "refunded", "clawed_back"].includes(row.status) ? "destructive" : "secondary"
                     }
                   >
-                    {holdLabel(row.held_until, row.status)}
+                    {conversionStatusLabel(row.status, holdLabel(row.held_until, row.status))}
                   </Badge>
                 </TableCell>
               </TableRow>
             ))}
             {!conversions.length ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
-                  No conversions yet.
+                <TableCell colSpan={4} className="text-muted-foreground">
+                  Nothing yet. Share a link from Promote and check back here.
                 </TableCell>
               </TableRow>
             ) : null}

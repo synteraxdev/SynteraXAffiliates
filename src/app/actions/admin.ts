@@ -148,7 +148,7 @@ export async function setPayoutStatus(payoutId: string, status: "approved" | "pa
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", payoutId)
-    .select("id, promoter_id, amount_usd")
+    .select("id, promoter_id, amount_usd, method")
     .single();
   if (error) throw new Error(error.message);
 
@@ -163,7 +163,7 @@ export async function setPayoutStatus(payoutId: string, status: "approved" | "pa
         profileId: payout.promoter_id,
         kind: "payout.paid",
         title: "Payout sent",
-        body: `Your payout of $${Number(payout.amount_usd || 0).toFixed(2)} was marked paid.`,
+        body: `Your payout of $${Number(payout.amount_usd || 0).toFixed(2)} was sent to your SynteraX ${payout.method === "xflow" ? "XFLOW Token Vault" : "Vault (USD)"}.`,
         entity: "payouts",
         entityId: payoutId,
       });

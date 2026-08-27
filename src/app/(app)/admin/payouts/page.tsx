@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { listPayouts } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 import { formatDateTime } from "@/lib/format";
+import { payoutMethodLabel, payoutStatusLabel } from "@/lib/payouts";
 
 export default async function AdminPayoutsPage() {
   const payouts = await listPayouts();
@@ -14,7 +15,10 @@ export default async function AdminPayoutsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-heading text-3xl font-semibold">Payout queue</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Approve or mark payouts paid after you send funds.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Pay only to the member&apos;s SynteraX Vault in USD or as XFLOW tokens — the same destinations as membership
+          rewards.
+        </p>
       </div>
       <Card className="p-5">
         <Table>
@@ -23,6 +27,7 @@ export default async function AdminPayoutsPage() {
               <TableHead>When</TableHead>
               <TableHead>Affiliate</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead>Pay as</TableHead>
               <TableHead>Status</TableHead>
               <TableHead />
             </TableRow>
@@ -33,8 +38,9 @@ export default async function AdminPayoutsPage() {
                 <TableCell>{formatDateTime(payout.created_at)}</TableCell>
                 <TableCell>{payout.profiles?.username || payout.profiles?.email}</TableCell>
                 <TableCell>{formatMoney(payout.amount_usd)}</TableCell>
+                <TableCell>{payoutMethodLabel(payout.method)}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{payout.status}</Badge>
+                  <Badge variant="secondary">{payoutStatusLabel(payout.status)}</Badge>
                 </TableCell>
                 <TableCell className="space-x-2">
                   <PayoutAction id={payout.id} status="approved" />

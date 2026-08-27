@@ -24,16 +24,15 @@ export default async function LoginPage({
             Your Future Starts Here.
           </h1>
           <p className="mt-4 text-muted-foreground">
-            The affiliate portal uses SynteraX SSO. There is no second password. Admins and affiliates keep the same
-            roles they already have on synterax.io.
+            Use the same SynteraX login you already have. Then copy a link, share it, and get paid to your Vault or in
+            XFLOW.
           </p>
         </div>
         <Card className="bg-card/90 p-6">
           <p className="text-xs uppercase tracking-[0.18em] text-primary">Welcome back</p>
           <h2 className="mt-2 font-heading text-2xl font-semibold">Sign in to Affiliates</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Continue with your SynteraX account. Role claims (`admin` / `company` vs `distributor`) control what you
-            can manage.
+            One account. If you can sign in to synterax.io, you can promote here.
           </p>
           {error ? (
             <Alert variant="destructive" className="mt-4">

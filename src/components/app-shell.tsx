@@ -26,26 +26,26 @@ import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const userNav = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/offers", label: "Offers", icon: Megaphone },
-  { href: "/links", label: "Links", icon: Link2 },
-  { href: "/conversions", label: "Conversions", icon: BadgeDollarSign },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/payouts", label: "Payouts", icon: Wallet },
-  { href: "/tools", label: "Tracking tools", icon: Wrench },
-  { href: "/notifications", label: "Notifications", icon: Bell },
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/offers", label: "Promote", icon: Megaphone },
+  { href: "/links", label: "My links", icon: Link2 },
+  { href: "/conversions", label: "Earnings", icon: BadgeDollarSign },
+  { href: "/reports", label: "Results", icon: BarChart3 },
+  { href: "/payouts", label: "Cash out", icon: Wallet },
+  { href: "/tools", label: "Help", icon: Wrench },
+  { href: "/notifications", label: "Alerts", icon: Bell },
 ];
 
 const adminNav = [
   { href: "/admin", label: "Admin home", icon: LayoutDashboard },
-  { href: "/admin/offers", label: "Manage offers", icon: Megaphone },
-  { href: "/admin/applications", label: "Offer applications", icon: ClipboardCheck },
-  { href: "/admin/conversions", label: "Review conversions", icon: BadgeDollarSign },
-  { href: "/admin/affiliates", label: "Affiliates", icon: Users },
-  { href: "/admin/payouts", label: "Payout queue", icon: Wallet },
-  { href: "/admin/reports", label: "Network reports", icon: BarChart3 },
-  { href: "/admin/fraud", label: "Fraud review", icon: ShieldAlert },
-  { href: "/admin/settings", label: "Program settings", icon: Settings },
+  { href: "/admin/offers", label: "Offers", icon: Megaphone },
+  { href: "/admin/applications", label: "Access requests", icon: ClipboardCheck },
+  { href: "/admin/conversions", label: "Approve earnings", icon: BadgeDollarSign },
+  { href: "/admin/affiliates", label: "People", icon: Users },
+  { href: "/admin/payouts", label: "Pay affiliates", icon: Wallet },
+  { href: "/admin/reports", label: "Network results", icon: BarChart3 },
+  { href: "/admin/fraud", label: "Flags", icon: ShieldAlert },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export function AppShell({

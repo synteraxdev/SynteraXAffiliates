@@ -1,5 +1,7 @@
-import { createCoupon } from "@/app/actions/affiliate";
+import { createCoupon, savePostbackUrl } from "@/app/actions/affiliate";
+import { ActionForm } from "@/components/action-form";
 import { CopyButton } from "@/components/copy-button";
+import { HelpTip } from "@/components/help-tip";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,61 +19,34 @@ export default async function ToolsPage() {
     listVisibleOffers(false),
   ]);
   const origin = appOrigin();
-  const postback = `${origin}/t/postback?offer=YOUR_SLUG&secret=OFFER_SECRET&click_id={clickid}&external_id={txn}&amount={payout}&status=approved&coupon=`;
-  const pixel = `${origin}/t/pixel?sx_click={clickid}&amount={payout}`;
   const smartlink = `${origin}/go/network/${encodeURIComponent(session.referralSlug)}`;
-  const outbound = profile?.postback_url || "https://your-tracker.example/postback?cid={clickid}&payout={payout}&status={status}";
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-semibold">Tracking tools</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Inbound postbacks, outbound Voluum/Binom hits, smartlink, and vanity coupons.
+        <p className="text-xs uppercase tracking-[0.18em] text-primary">Help</p>
+        <h1 className="mt-2 font-heading text-3xl font-semibold">How this works</h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          You do not need ads software. Copy a link, share it, and cash out to your Vault or in XFLOW.
         </p>
       </div>
       <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Network smartlink</h2>
+        <h2 className="font-heading text-lg font-semibold">Your one link for everything</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          One link that routes by geo, device, weight, EPC, and cap. Capped or geo-blocked offers fall through to the
-          lander.
+          If you are unsure which offer to pick, share this. We route people to the best available page.
         </p>
         <pre className="mt-4 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{smartlink}</pre>
-        <CopyButton value={smartlink} />
+        <CopyButton value={smartlink} label="Copy my all-in-one link" />
       </Card>
       <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Inbound S2S postback</h2>
+        <h2 className="font-heading text-lg font-semibold">Backup checkout code</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          GET or POST from our landers. Duplicate <span className="font-mono">external_id</span> values are ignored.
-          Pass <span className="font-mono">coupon</span> when cookies fail.
+          Only needed if a friend says the link did not stick. They can type this code at checkout instead.
         </p>
-        <pre className="mt-4 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{postback}</pre>
-        <div className="mt-3">
-          <CopyButton value={postback} />
-        </div>
-      </Card>
-      <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Outbound affiliate postback</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          We fire your tracker URL on pending / approved / rejected / refunded. Set it on the Payouts page.
-        </p>
-        <pre className="mt-4 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{outbound}</pre>
-        <CopyButton value={outbound} />
-      </Card>
-      <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Conversion pixel</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Fire a 1×1 GIF on thank-you pages when you cannot send a server postback.
-        </p>
-        <pre className="mt-4 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{`<img src="${pixel}" width="1" height="1" alt="" />`}</pre>
-        <CopyButton value={`<img src="${pixel}" width="1" height="1" alt="" />`} />
-      </Card>
-      <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Vanity coupons</h2>
-        <form action={createCoupon} className="mt-4 grid gap-3 md:grid-cols-3">
+        <ActionForm action={createCoupon} className="mt-4 grid gap-3 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="code">Code</Label>
-            <Input id="code" name="code" placeholder="TESTHOOK20" />
+            <Input id="code" name="code" placeholder="LEWIS20" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="offer_id">Offer (optional)</Label>
@@ -85,9 +60,9 @@ export default async function ToolsPage() {
             </select>
           </div>
           <div className="self-end">
-            <Button type="submit">Create coupon</Button>
+            <Button type="submit">Save code</Button>
           </div>
-        </form>
+        </ActionForm>
         <ul className="mt-4 space-y-1 font-mono text-xs text-muted-foreground">
           {coupons.map((coupon) => (
             <li key={coupon.id}>
@@ -97,15 +72,31 @@ export default async function ToolsPage() {
           ))}
         </ul>
       </Card>
-      <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Click macros</h2>
-        <ul className="mt-3 space-y-2 font-mono text-sm text-muted-foreground">
-          <li>sx_click — unique click id placed on the destination URL</li>
-          <li>ref / aff_id — your referral slug ({session.referralSlug})</li>
-          <li>sub1, sub2, sub3 — campaign tokens</li>
-          <li>sx_vid — visitor cookie used for first/last/linear attribution</li>
-        </ul>
-      </Card>
+      <details className="rounded-xl border border-border/70 p-5">
+        <summary className="cursor-pointer font-heading text-lg font-semibold">
+          For ad buyers (Voluum / Binom)
+        </summary>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Most affiliates can ignore this. If you run a tracker, paste the URL we should hit with click id, payout, and
+          status.
+        </p>
+        <ActionForm action={savePostbackUrl} className="mt-4 space-y-3">
+          <div className="space-y-2">
+            <Label htmlFor="postback_url">
+              <HelpTip label="Your tracker URL">We replace {"{clickid}"}, {"{payout}"}, and {"{status}"} automatically.</HelpTip>
+            </Label>
+            <Input
+              id="postback_url"
+              name="postback_url"
+              defaultValue={profile?.postback_url || ""}
+              placeholder="https://tracker.example/postback?cid={clickid}&payout={payout}&status={status}"
+            />
+          </div>
+          <Button type="submit" variant="outline">
+            Save tracker URL
+          </Button>
+        </ActionForm>
+      </details>
     </div>
   );
 }

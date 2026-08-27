@@ -17,8 +17,8 @@ const features = [
   },
   {
     icon: Wallet,
-    title: "Flexible payouts",
-    body: "CPA, CPC, CPL, RevShare, and hybrid offers, plus an approval and payout queue.",
+    title: "Paid like SynteraX",
+    body: "Cash out to your Vault in USD or take XFLOW tokens. No banks, no USDT, no extra wallets.",
   },
   {
     icon: BadgeCheck,
@@ -50,8 +50,8 @@ export default function LandingPage() {
               Promote the network. Track every click. Get paid for what converts.
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-              A dedicated affiliate portal for SynteraX members. Admins publish offers. Affiliates generate links,
-              watch live performance, and request payouts — all on the SynteraX identity you already have.
+              Share a SynteraX link. If people join, you earn. We pay into your SynteraX Vault in USD or as XFLOW
+              tokens — the same places membership rewards already go.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">

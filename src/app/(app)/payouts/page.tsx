@@ -1,13 +1,12 @@
-import { requestPayout, savePayoutDetails } from "@/app/actions/affiliate";
+import { PayoutWizard } from "@/components/payout-wizard";
+import { HelpTip } from "@/components/help-tip";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { dashboardStats, getProfile, getSettings, listPayouts } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 import { formatDateTime } from "@/lib/format";
+import { parsePayoutMethod, payoutMethodLabel, payoutStatusLabel } from "@/lib/payouts";
 import { getSession } from "@/lib/session";
 
 export default async function PayoutsPage() {
@@ -19,62 +18,33 @@ export default async function PayoutsPage() {
     getSettings(),
     getProfile(session.id),
   ]);
-  const details = (profile?.payout_details || {}) as { wallet?: string; note?: string };
+  const method = parsePayoutMethod(profile?.payout_method);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-semibold">Payouts</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Approved commissions can be withdrawn once you reach {formatMoney(settings.min_payout_usd)}. Refunded and
-          clawed-back rows never enter this queue.
+        <p className="text-xs uppercase tracking-[0.18em] text-primary">Cash out</p>
+        <h1 className="mt-2 font-heading text-3xl font-semibold">Get paid</h1>
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          Same destinations as SynteraX membership: USD into your Vault, or XFLOW tokens. We do not pay bank accounts,
+          USDT wallets, or any other method from this portal.
         </p>
       </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="p-4">
-          <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Available</p>
-          <p className="mt-2 font-heading text-2xl">{formatMoney(stats.availableEarnings)}</p>
-          <form action={requestPayout} className="mt-4">
-            <Button type="submit">Request payout</Button>
-          </form>
-        </Card>
-        <Card className="p-4 md:col-span-2">
-          <form action={savePayoutDetails} className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="payout_method">Method</Label>
-              <Input id="payout_method" name="payout_method" defaultValue={profile?.payout_method || "manual"} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="wallet">Wallet / destination</Label>
-              <Input id="wallet" name="wallet" placeholder="USDT / bank / note" defaultValue={details.wallet || ""} />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="postback_url">Outbound postback URL</Label>
-              <Input
-                id="postback_url"
-                name="postback_url"
-                placeholder="https://tracker.example/postback?cid={clickid}&payout={payout}&status={status}"
-                defaultValue={profile?.postback_url || ""}
-              />
-              <p className="text-xs text-muted-foreground">
-                We GET this URL on conversion status changes. Macros: {"{clickid}"}, {"{payout}"}, {"{status}"}.
-              </p>
-            </div>
-            <input type="hidden" name="postback_method" value="GET" />
-            <div className="md:col-span-2">
-              <Button type="submit" variant="outline">
-                Save payout details
-              </Button>
-            </div>
-          </form>
-        </Card>
-      </div>
+      <PayoutWizard
+        available={stats.availableEarnings}
+        minimum={Number(settings.min_payout_usd || 0)}
+        currentMethod={method}
+      />
       <Card className="p-5">
-        <Table>
+        <h2 className="font-heading text-lg font-semibold">Your requests</h2>
+        <Table className="mt-4">
           <TableHeader>
             <TableRow>
-              <TableHead>Requested</TableHead>
+              <TableHead>When</TableHead>
               <TableHead>Amount</TableHead>
+              <TableHead>
+                <HelpTip label="Paid as">USD Vault or XFLOW tokens only.</HelpTip>
+              </TableHead>
               <TableHead>Status</TableHead>
             </TableRow>
           </TableHeader>
@@ -83,15 +53,16 @@ export default async function PayoutsPage() {
               <TableRow key={payout.id}>
                 <TableCell>{formatDateTime(payout.created_at)}</TableCell>
                 <TableCell>{formatMoney(payout.amount_usd)}</TableCell>
+                <TableCell>{payoutMethodLabel(payout.method)}</TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{payout.status}</Badge>
+                  <Badge variant="secondary">{payoutStatusLabel(payout.status)}</Badge>
                 </TableCell>
               </TableRow>
             ))}
             {!payouts.length ? (
               <TableRow>
-                <TableCell colSpan={3} className="text-muted-foreground">
-                  No payout requests yet.
+                <TableCell colSpan={4} className="text-muted-foreground">
+                  No cash-out requests yet. Finish the steps above when you have approved earnings.
                 </TableCell>
               </TableRow>
             ) : null}

@@ -31,7 +31,7 @@ Schema and RPCs are in `supabase/migrations/`. They are already applied on the d
 - Creatives that bake `/go/...`, UTM presets, QR, and copy kits
 - Click logging, velocity fraud flags, daily/total caps
 - Duplicate `external_id` protection
-- Affiliate dashboard, reports, payout requests
+- Affiliate dashboard, reports, and cash-out to SynteraX Vault (USD) or XFLOW tokens only
 - Admin offer CRUD, applications, conversion review, payout approval, fraud queue, program settings
 
 ## Local setup

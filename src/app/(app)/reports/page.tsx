@@ -1,3 +1,4 @@
+import { HelpTip } from "@/components/help-tip";
 import { StatCard } from "@/components/stat-card";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,14 +18,21 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl font-semibold">Reports</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Clicks, conversions, EPC, and commission by offer and day.</p>
+        <p className="text-xs uppercase tracking-[0.18em] text-primary">Results</p>
+        <h1 className="mt-2 font-heading text-3xl font-semibold">How your shares are doing</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          No spreadsheets needed. More clicks and signups mean more you can cash out.
+        </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-4">
         <StatCard label="Clicks" value={String(stats.clicks)} />
-        <StatCard label="CR" value={`${conversionRate(stats.clicks, stats.conversions).toFixed(1)}%`} />
-        <StatCard label="EPC" value={formatMoney(epc(stats.clicks, stats.approvedEarnings + stats.pendingEarnings))} />
-        <StatCard label="Commission" value={formatMoney(stats.approvedEarnings + stats.pendingEarnings)} />
+        <StatCard
+          label="Signup rate"
+          value={`${conversionRate(stats.clicks, stats.conversions).toFixed(1)}%`}
+          hint="People who clicked and then converted"
+        />
+        <StatCard label="Earn per click" value={formatMoney(epc(stats.clicks, stats.approvedEarnings + stats.pendingEarnings))} />
+        <StatCard label="Total earned" value={formatMoney(stats.approvedEarnings + stats.pendingEarnings)} />
       </div>
       <Card className="p-5">
         <h2 className="font-heading text-lg font-semibold">By offer</h2>
@@ -33,9 +41,11 @@ export default async function ReportsPage() {
             <TableRow>
               <TableHead>Offer</TableHead>
               <TableHead>Clicks</TableHead>
-              <TableHead>Conversions</TableHead>
-              <TableHead>CR</TableHead>
-              <TableHead>Commission</TableHead>
+              <TableHead>Signups</TableHead>
+              <TableHead>
+                <HelpTip label="Rate">Signups divided by clicks.</HelpTip>
+              </TableHead>
+              <TableHead>Earned</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -52,20 +62,20 @@ export default async function ReportsPage() {
         </Table>
       </Card>
       <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">By day</h2>
+        <h2 className="font-heading text-lg font-semibold">Last two weeks</h2>
         <Table className="mt-4">
           <TableHeader>
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Clicks</TableHead>
-              <TableHead>Conversions</TableHead>
-              <TableHead>Commission</TableHead>
+              <TableHead>Signups</TableHead>
+              <TableHead>Earned</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {days.map((day) => (
               <TableRow key={day.date}>
-                <TableCell className="font-mono text-sm">{day.date}</TableCell>
+                <TableCell>{day.date}</TableCell>
                 <TableCell>{day.clicks}</TableCell>
                 <TableCell>{day.conversions}</TableCell>
                 <TableCell>{formatMoney(day.commission)}</TableCell>
