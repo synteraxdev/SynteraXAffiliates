@@ -26,23 +26,27 @@ export function SynteraLogo({
       width={731}
       height={185}
       priority={priority}
-      className={cn("h-12 w-auto shrink-0 object-contain", className)}
+      className={cn("h-12 w-auto shrink-0 object-contain object-left", className)}
     />
   );
 }
 
+/**
+ * Card lockup proportion: badge is ~80% of the wordmark box, small
+ * semibold caps, wide tracking, tight vertical padding.
+ */
 const lockup = {
   sm: {
-    markClassName: "h-4 w-auto max-w-[6.5rem] sm:h-6 sm:max-w-none",
-    badgeClassName: "text-[8px] tracking-[0.18em] sm:text-[10px] sm:tracking-[0.24em]",
+    markClassName: "h-5 w-auto",
+    badgeClassName: "h-[15px] px-1.5 text-[8px] tracking-[0.18em]",
   },
   md: {
-    markClassName: "h-5 w-auto max-w-[8rem] sm:h-6 sm:max-w-none",
-    badgeClassName: "",
+    markClassName: "h-6 w-auto",
+    badgeClassName: "h-[19px] px-1.5 text-[9px] tracking-[0.18em]",
   },
   lg: {
-    markClassName: "h-4 w-auto max-w-[6.5rem] sm:h-6 sm:max-w-none",
-    badgeClassName: "text-[8px] tracking-[0.18em] sm:text-[10px] sm:tracking-[0.24em]",
+    markClassName: "h-7 w-auto",
+    badgeClassName: "h-[22px] px-2 text-[10px] tracking-[0.2em]",
   },
 } as const;
 
@@ -61,11 +65,11 @@ export function BrandWordmark({
 
   return (
     <Link href={href} className={cn("inline-flex min-w-0 items-center", className)} aria-label="SynteraX Affiliates">
-      <span className="inline-flex min-w-0 items-center gap-2 sm:gap-2.5">
+      <span className="inline-flex items-center gap-2 sm:gap-2.5">
         <SynteraLogo className={scale.markClassName} priority />
         <span
           className={cn(
-            "shrink-0 rounded-md border border-[#1A56E8]/45 bg-[#1A56E8]/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8FB4FF]",
+            "inline-flex shrink-0 items-center justify-center rounded-md border border-[#1A56E8]/45 bg-[#1A56E8]/12 font-sans font-semibold uppercase leading-none text-[#8FB4FF]",
             scale.badgeClassName,
           )}
         >
