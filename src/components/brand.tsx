@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+
 import { cn } from "@/lib/utils";
 
 type LogoVariant = "light" | "dark";
@@ -32,16 +33,16 @@ export function SynteraLogo({
 
 const lockup = {
   sm: {
-    logo: "h-7",
-    badge: "h-[22px] px-2.5 text-[8.5px] tracking-[0.2em]",
+    markClassName: "h-4 w-auto max-w-[6.5rem] sm:h-6 sm:max-w-none",
+    badgeClassName: "text-[8px] tracking-[0.18em] sm:text-[10px] sm:tracking-[0.24em]",
   },
   md: {
-    logo: "h-7",
-    badge: "h-[22px] px-2 text-[8px] tracking-[0.18em]",
+    markClassName: "h-5 w-auto max-w-[8rem] sm:h-6 sm:max-w-none",
+    badgeClassName: "",
   },
   lg: {
-    logo: "h-11",
-    badge: "h-7 px-3 text-[10.5px] tracking-[0.22em]",
+    markClassName: "h-4 w-auto max-w-[6.5rem] sm:h-6 sm:max-w-none",
+    badgeClassName: "text-[8px] tracking-[0.18em] sm:text-[10px] sm:tracking-[0.24em]",
   },
 } as const;
 
@@ -49,24 +50,27 @@ export function BrandWordmark({
   compact = false,
   href = "/",
   size = "md",
+  className,
 }: {
   compact?: boolean;
   href?: string;
-  size?: "sm" | "md" | "lg";
+  size?: keyof typeof lockup;
+  className?: string;
 }) {
   const scale = compact ? lockup.sm : lockup[size];
 
   return (
-    <Link href={href} className="inline-flex items-center gap-2.5" aria-label="SynteraX Affiliates">
-      <SynteraLogo className={scale.logo} priority />
-      <span
-        className={cn(
-          "inline-flex shrink-0 items-center justify-center rounded-[6px] border font-normal uppercase text-[#C5D2F2]",
-          "border-[#3D6FE0]/50 bg-[#0A1226] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
-          scale.badge,
-        )}
-      >
-        Affiliates
+    <Link href={href} className={cn("inline-flex min-w-0 items-center", className)} aria-label="SynteraX Affiliates">
+      <span className="inline-flex min-w-0 items-center gap-2 sm:gap-2.5">
+        <SynteraLogo className={scale.markClassName} priority />
+        <span
+          className={cn(
+            "shrink-0 rounded-md border border-[#1A56E8]/45 bg-[#1A56E8]/12 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#8FB4FF]",
+            scale.badgeClassName,
+          )}
+        >
+          Affiliates
+        </span>
       </span>
     </Link>
   );
