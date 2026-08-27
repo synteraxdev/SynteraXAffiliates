@@ -3,9 +3,17 @@ import { HelpTip } from "@/components/help-tip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getOfferAccess, listApplications, listVisibleOffers, offerDailyCap } from "@/lib/data";
 import { earnInPlainEnglish, whoCanJoin } from "@/lib/copy";
 import { getSession } from "@/lib/session";
+
+function offerStatus(locked: boolean, applicationStatus?: string) {
+  if (!locked) return { label: "Open", variant: "secondary" as const };
+  if (applicationStatus === "pending") return { label: "Waiting", variant: "outline" as const };
+  if (applicationStatus === "rejected") return { label: "Not approved", variant: "destructive" as const };
+  return { label: "Ask first", variant: "outline" as const };
+}
 
 export default async function OffersPage() {
   const session = await getSession();
@@ -22,42 +30,74 @@ export default async function OffersPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-primary">Promote</p>
         <h1 className="mt-2 font-heading text-3xl font-semibold">What do you want to share?</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-          Tap an offer, copy the link we make for you, and send it to people. If they join, you earn.
+          Pick a row, get your link, and send it to people. If they join, you earn.
         </p>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        {offers.map((offer, index) => {
-          const application = appByOffer.get(offer.id);
-          const access = accessRows[index];
-          const remaining = caps[index];
-          const locked = offer.requires_approval && !access.allowed;
-          return (
-            <Card key={offer.id} className="p-5">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-heading text-lg font-semibold">{offer.name}</h2>
-                    {offer.requires_approval ? <Badge variant="outline">Ask first</Badge> : <Badge>Open</Badge>}
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">{offer.description}</p>
-                  <p className="mt-3 text-sm font-medium">{earnInPlainEnglish(offer)}</p>
-                </div>
-                <Button asChild size="sm">
-                  <Link href={`/offers/${offer.slug}`}>{locked ? "Request access" : "Get my link"}</Link>
-                </Button>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                <span>
-                  <HelpTip label="Who can join">Anyone worldwide, unless a country list is shown.</HelpTip>
-                  : {whoCanJoin(offer.allowed_countries)}
-                </span>
-                {remaining != null ? <span>Spots left today: {remaining}</span> : null}
-                {locked && application?.status === "pending" ? <span>Your request is waiting</span> : null}
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      <Card className="p-5">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[220px]">Offer</TableHead>
+              <TableHead className="min-w-[180px]">
+                <HelpTip label="You earn">What you get when someone you sent signs up or spends.</HelpTip>
+              </TableHead>
+              <TableHead className="min-w-[140px]">
+                <HelpTip label="Who can join">Anyone worldwide, unless a country list is shown.</HelpTip>
+              </TableHead>
+              <TableHead>
+                <HelpTip label="Status">Open means you can copy a link now. Ask first means we need to approve you.</HelpTip>
+              </TableHead>
+              <TableHead>
+                <HelpTip label="Spots today">How many signups are left today, if this offer has a daily limit.</HelpTip>
+              </TableHead>
+              <TableHead className="text-right">Next step</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {offers.map((offer, index) => {
+              const application = appByOffer.get(offer.id);
+              const access = accessRows[index];
+              const remaining = caps[index];
+              const locked = offer.requires_approval && !access.allowed;
+              const status = offerStatus(locked, application?.status);
+              return (
+                <TableRow key={offer.id}>
+                  <TableCell className="whitespace-normal">
+                    <Link href={`/offers/${offer.slug}`} className="font-medium hover:text-primary">
+                      {offer.name}
+                    </Link>
+                    {offer.description ? (
+                      <p className="mt-1 max-w-sm text-xs text-muted-foreground">{offer.description}</p>
+                    ) : null}
+                  </TableCell>
+                  <TableCell className="whitespace-normal font-medium">{earnInPlainEnglish(offer)}</TableCell>
+                  <TableCell className="whitespace-normal text-muted-foreground">
+                    {whoCanJoin(offer.allowed_countries)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {remaining != null ? remaining : "No daily limit"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild size="sm">
+                      <Link href={`/offers/${offer.slug}`}>{locked ? "Request access" : "Get my link"}</Link>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {!offers.length ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-muted-foreground">
+                  No offers are open right now. Check back soon.
+                </TableCell>
+              </TableRow>
+            ) : null}
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 }
