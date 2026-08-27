@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  conversionStatusLabel,
   isPayoutMethod,
   parsePayoutMethod,
   payoutDestination,
@@ -21,5 +22,11 @@ describe("affiliate payout destinations", () => {
     expect(payoutMethodLabel("xflow")).toBe("XFLOW tokens");
     expect(payoutDestination("vault", "lewis").currency).toBe("USD");
     expect(payoutDestination("xflow").currency).toBe("XFLOW");
+  });
+
+  it("explains earnings status in plain English", () => {
+    expect(conversionStatusLabel("pending", "hold 2d")).toBe("Checking — about 2 days left");
+    expect(conversionStatusLabel("pending", "hold expired")).toBe("Waiting for review");
+    expect(conversionStatusLabel("approved")).toBe("Ready to cash out");
   });
 });

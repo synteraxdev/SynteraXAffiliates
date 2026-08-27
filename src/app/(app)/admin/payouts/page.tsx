@@ -57,6 +57,7 @@ export default async function AdminPayoutsPage() {
 }
 
 function PayoutAction({ id, status }: { id: string; status: "approved" | "paid" | "rejected" }) {
+  const label = status === "approved" ? "Approve" : status === "paid" ? "Mark paid" : "Decline";
   return (
     <form
       action={async () => {
@@ -66,7 +67,7 @@ function PayoutAction({ id, status }: { id: string; status: "approved" | "paid" 
       className="inline"
     >
       <Button type="submit" size="sm" variant="outline">
-        {status}
+        {label}
       </Button>
     </form>
   );

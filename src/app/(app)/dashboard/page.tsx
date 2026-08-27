@@ -50,7 +50,10 @@ export default async function DashboardPage() {
         <GettingStarted
           hasLink={links.length > 0 || clicks.length > 0}
           hasClick={clicks.length > 0}
-          hasPayoutMethod={isPayoutMethod((profile?.payout_details as { kind?: string } | undefined)?.kind)}
+          hasPayoutMethod={
+            isPayoutMethod(profile?.payout_method) &&
+            isPayoutMethod((profile?.payout_details as { kind?: string } | undefined)?.kind)
+          }
         />
         <Card className="p-5">
           <h2 className="font-heading text-lg font-semibold">Pick something to share</h2>

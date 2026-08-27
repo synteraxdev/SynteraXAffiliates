@@ -42,7 +42,7 @@ export function GettingStarted({
   return (
     <Card className="p-5">
       <p className="text-xs uppercase tracking-[0.18em] text-primary">Start here</p>
-      <h2 className="mt-2 font-heading text-xl font-semibold">Three easy steps to earn</h2>
+      <h2 className="mt-2 font-heading text-xl font-semibold">Your checklist</h2>
       <ol className="mt-4 space-y-4">
         {steps.map((step, index) => (
           <li key={step.title} className="flex gap-3">

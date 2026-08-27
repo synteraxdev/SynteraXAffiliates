@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getOfferAccess, listApplications, listVisibleOffers, offerDailyCap } from "@/lib/data";
-import { earnInPlainEnglish } from "@/lib/copy";
+import { earnInPlainEnglish, whoCanJoin } from "@/lib/copy";
 import { getSession } from "@/lib/session";
 
 export default async function OffersPage() {
@@ -48,8 +48,8 @@ export default async function OffersPage() {
               </div>
               <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
                 <span>
-                  <HelpTip label="Countries">Who can open this offer. Worldwide means anyone.</HelpTip>
-                  : {offer.allowed_countries?.length ? offer.allowed_countries.join(", ") : "Worldwide"}
+                  <HelpTip label="Who can join">Anyone worldwide, unless a country list is shown.</HelpTip>
+                  : {whoCanJoin(offer.allowed_countries)}
                 </span>
                 {remaining != null ? <span>Spots left today: {remaining}</span> : null}
                 {locked && application?.status === "pending" ? <span>Your request is waiting</span> : null}

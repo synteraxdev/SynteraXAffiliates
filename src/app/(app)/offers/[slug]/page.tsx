@@ -4,6 +4,7 @@ import { applyToOffer, createCoupon } from "@/app/actions/affiliate";
 import { ActionForm } from "@/components/action-form";
 import { CopyButton } from "@/components/copy-button";
 import { HelpTip } from "@/components/help-tip";
+import { ShareKit } from "@/components/share-kit";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,7 +19,7 @@ import {
   offerDailyCap,
 } from "@/lib/data";
 import { trackingPath } from "@/lib/affiliate";
-import { earnInPlainEnglish } from "@/lib/copy";
+import { defaultShareMessage, earnInPlainEnglish } from "@/lib/copy";
 import { bakeCreative, qrImageUrl, utmTrackingLink } from "@/lib/network";
 import { getSession } from "@/lib/session";
 import { appOrigin } from "@/lib/env";
@@ -90,15 +91,17 @@ export default async function OfferDetailPage({
               This already has your name on it. Anyone who clicks it is counted as yours.
             </p>
             <p className="mt-3 break-all rounded-md bg-background/70 p-3 font-mono text-sm">{link}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <CopyButton value={link} label="Copy my link" />
-              <CopyButton value={smartlink} label="Copy one-link-for-all" />
+            <div className="mt-4">
+              <ShareKit url={link} title={offer.name} text={defaultShareMessage(offer.name)} />
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">
-              <HelpTip label="One-link-for-all">
-                If this offer is full or blocked in a country, we send the visitor to the next best SynteraX page.
+            <p className="mt-4 text-xs text-muted-foreground">
+              <HelpTip label="One link for everything">
+                If this page is full or not available in a country, we send the visitor to the next best SynteraX page.
               </HelpTip>
             </p>
+            <div className="mt-2">
+              <CopyButton value={smartlink} label="Copy my all-in-one link" />
+            </div>
           </Card>
 
           <Card className="p-5">
@@ -116,25 +119,35 @@ export default async function OfferDetailPage({
               className="mt-4 h-40 w-40 rounded-md border border-border/70 bg-white p-2"
             />
             <div className="mt-4 space-y-3">
-              {creatives.map((creative) => {
-                const baked = bakeCreative(creative.body, {
-                  link,
-                  ref: session.referralSlug,
-                  offer: offer.slug,
-                  utmLink: utm,
-                });
-                return (
-                  <div key={creative.id} className="rounded-lg border border-border/70 p-3">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-medium">{creative.name}</p>
-                      <CopyButton value={baked} label="Copy message" />
-                    </div>
-                    <pre className="mt-2 overflow-auto font-mono text-xs whitespace-pre-wrap text-muted-foreground">
-                      {baked}
-                    </pre>
+              {(creatives.length
+                ? creatives.map((creative) => ({
+                    id: creative.id,
+                    name: creative.name,
+                    body: bakeCreative(creative.body, {
+                      link,
+                      ref: session.referralSlug,
+                      offer: offer.slug,
+                      utmLink: utm,
+                    }),
+                  }))
+                : [
+                    {
+                      id: "default",
+                      name: "Ready-made message",
+                      body: `${defaultShareMessage(offer.name)}\n${link}`,
+                    },
+                  ]
+              ).map((creative) => (
+                <div key={creative.id} className="rounded-lg border border-border/70 p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium">{creative.name}</p>
+                    <CopyButton value={creative.body} label="Copy message" />
                   </div>
-                );
-              })}
+                  <pre className="mt-2 overflow-auto font-mono text-xs whitespace-pre-wrap text-muted-foreground">
+                    {creative.body}
+                  </pre>
+                </div>
+              ))}
             </div>
           </Card>
 
