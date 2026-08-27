@@ -61,7 +61,7 @@ export function BrandWordmark({
       <SynteraLogo className={scale.logo} priority />
       <span
         className={cn(
-          "inline-flex shrink-0 items-center justify-center rounded-full border font-normal uppercase text-[#C5D2F2]",
+          "inline-flex shrink-0 items-center justify-center rounded-[6px] border font-normal uppercase text-[#C5D2F2]",
           "border-[#3D6FE0]/50 bg-[#0A1226] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
           scale.badge,
         )}
