@@ -19,8 +19,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SynteraX Affiliates",
-  description: "Share SynteraX, earn when people join, and get paid to your Vault or in XFLOW.",
+  title: "SynteraX Affiliates — Get paid to share SynteraX",
+  description: "Members-only. Share membership, SynteraX Card, and XFLOW. Get paid to your Vault or in tokens.",
   icons: {
     icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
     apple: [{ url: "/logo-light.png" }],
