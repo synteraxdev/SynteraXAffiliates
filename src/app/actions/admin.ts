@@ -26,6 +26,7 @@ export async function saveOffer(formData: FormData) {
     category: String(formData.get("category") || "general"),
     destination_kind: String(formData.get("destination_kind") || "external"),
     destination_value: String(formData.get("destination_value") || "/"),
+    preview_image_url: String(formData.get("preview_image_url") || "").trim() || null,
     link_style: String(formData.get("link_style") || "query"),
     ref_param: String(formData.get("ref_param") || "ref"),
     conversion_type: String(formData.get("conversion_type") || "postback"),

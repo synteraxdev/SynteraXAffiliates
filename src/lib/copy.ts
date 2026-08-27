@@ -26,6 +26,11 @@ export function whoCanJoin(countries?: string[] | null): string {
   return countries?.length ? countries.join(", ") : "Anyone, worldwide";
 }
 
+export function offerPreviewSrc(offer: { slug: string; preview_image_url?: string | null }): string {
+  if (offer.preview_image_url) return offer.preview_image_url;
+  return `/offers/${offer.slug}.png`;
+}
+
 export function defaultShareMessage(offerName: string): string {
   return `I'm sharing SynteraX — ${offerName}. Join with my link:`;
 }

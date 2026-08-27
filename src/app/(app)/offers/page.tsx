@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
+import { OfferPreview } from "@/components/offer-preview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,6 +38,9 @@ export default async function OffersPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[148px]">
+                <HelpTip label="Preview">A screenshot of the page people see when they open your link.</HelpTip>
+              </TableHead>
               <TableHead className="min-w-[220px]">Offer</TableHead>
               <TableHead className="min-w-[180px]">
                 <HelpTip label="You earn">What you get when someone you sent signs up or spends.</HelpTip>
@@ -62,6 +66,11 @@ export default async function OffersPage() {
               const status = offerStatus(locked, application?.status);
               return (
                 <TableRow key={offer.id}>
+                  <TableCell>
+                    <Link href={`/offers/${offer.slug}`} className="inline-block">
+                      <OfferPreview offer={offer} />
+                    </Link>
+                  </TableCell>
                   <TableCell className="whitespace-normal">
                     <Link href={`/offers/${offer.slug}`} className="font-medium hover:text-primary">
                       {offer.name}
@@ -90,7 +99,7 @@ export default async function OffersPage() {
             })}
             {!offers.length ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
+                <TableCell colSpan={7} className="text-muted-foreground">
                   No offers are open right now. Check back soon.
                 </TableCell>
               </TableRow>
