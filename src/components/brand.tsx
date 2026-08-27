@@ -30,6 +30,21 @@ export function SynteraLogo({
   );
 }
 
+const lockup = {
+  sm: {
+    logo: "h-7",
+    badge: "h-[22px] px-2.5 text-[8.5px] tracking-[0.2em]",
+  },
+  md: {
+    logo: "h-7",
+    badge: "h-[22px] px-2 text-[8px] tracking-[0.18em]",
+  },
+  lg: {
+    logo: "h-11",
+    badge: "h-7 px-3 text-[10.5px] tracking-[0.22em]",
+  },
+} as const;
+
 export function BrandWordmark({
   compact = false,
   href = "/",
@@ -39,12 +54,20 @@ export function BrandWordmark({
   href?: string;
   size?: "sm" | "md" | "lg";
 }) {
-  const height = compact || size === "sm" ? "h-7" : size === "lg" ? "h-12" : "h-9";
+  const scale = compact ? lockup.sm : lockup[size];
 
   return (
-    <Link href={href} className="inline-flex flex-col items-start gap-0.5">
-      <SynteraLogo className={height} priority />
-      <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Affiliates</span>
+    <Link href={href} className="inline-flex items-center gap-2.5" aria-label="SynteraX Affiliates">
+      <SynteraLogo className={scale.logo} priority />
+      <span
+        className={cn(
+          "inline-flex shrink-0 items-center justify-center rounded-full border font-normal uppercase text-[#C5D2F2]",
+          "border-[#3D6FE0]/50 bg-[#0A1226] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]",
+          scale.badge,
+        )}
+      >
+        Affiliates
+      </span>
     </Link>
   );
 }
