@@ -37,15 +37,15 @@ export function SynteraLogo({
  */
 const lockup = {
   sm: {
-    markClassName: "h-5 w-auto",
+    markClassName: "h-6 w-auto",
     badgeClassName: "h-[15px] px-1.5 text-[8px] tracking-[0.18em]",
   },
   md: {
-    markClassName: "h-6 w-auto",
+    markClassName: "h-7 w-auto",
     badgeClassName: "h-[19px] px-1.5 text-[9px] tracking-[0.18em]",
   },
   lg: {
-    markClassName: "h-7 w-auto",
+    markClassName: "h-8 w-auto",
     badgeClassName: "h-[22px] px-2 text-[10px] tracking-[0.2em]",
   },
 } as const;
