@@ -16,16 +16,21 @@ export function MarketingHeader({
   primaryHref?: string;
   primaryLabel?: string;
 }) {
+  const mobileLabel = /sign/i.test(primaryLabel) ? "Sign in" : "Join";
+
   return (
     <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-        <BrandWordmark size="lg" />
-        <div className="flex items-center gap-2 sm:gap-3">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-3 sm:gap-3 sm:px-6 sm:py-4">
+        <BrandWordmark size="lg" className="min-w-0" />
+        <div className="flex shrink-0 items-center gap-2">
           <Button asChild variant="ghost" className="hidden sm:inline-flex">
             <a href="/api/auth/login">Sign In with SynteraX</a>
           </Button>
-          <Button asChild>
-            <a href={primaryHref}>{primaryLabel}</a>
+          <Button asChild size="sm" className="sm:h-8 sm:px-2.5 sm:text-sm">
+            <a href={primaryHref}>
+              <span className="sm:hidden">{mobileLabel}</span>
+              <span className="hidden sm:inline">{primaryLabel}</span>
+            </a>
           </Button>
         </div>
       </div>
