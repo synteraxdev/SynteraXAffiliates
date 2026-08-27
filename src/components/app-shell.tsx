@@ -62,7 +62,7 @@ export function AppShell({
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-64 shrink-0 border-r border-sidebar-border bg-sidebar/90 p-4 lg:flex lg:flex-col">
-        <BrandWordmark />
+        <BrandWordmark href="/dashboard" />
         <Badge variant="secondary" className="mt-4 w-fit text-[11px]">
           {roleLabel(user.role)}
         </Badge>
@@ -102,7 +102,7 @@ export function AppShell({
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-border/70 px-4 py-3 lg:hidden">
-          <BrandWordmark compact />
+          <BrandWordmark compact href="/dashboard" />
           <Link href="/notifications" className="relative">
             <Flag className="h-4 w-4 text-primary" />
             {unreadCount ? (

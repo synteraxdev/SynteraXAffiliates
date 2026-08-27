@@ -21,6 +21,10 @@ const jetbrains = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "SynteraX Affiliates",
   description: "Promote SynteraX offers, track clicks and conversions, and get paid.",
+  icons: {
+    icon: [{ url: "/logo.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/logo-light.png" }],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

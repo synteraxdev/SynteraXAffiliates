@@ -31,7 +31,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
-        <BrandWordmark />
+        <BrandWordmark size="lg" />
         <div className="flex items-center gap-3">
           <Button asChild variant="ghost">
             <Link href="/login">Sign in</Link>
