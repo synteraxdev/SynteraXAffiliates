@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { JsTrackingSnippets } from "@/components/js-tracking-snippets";
 import { getOfferById, getOfferSecret, listCreatives } from "@/lib/data";
 import { appOrigin } from "@/lib/env";
 
@@ -25,7 +26,10 @@ export default async function EditOfferPage({ params }: { params: Promise<{ id: 
         <OfferForm offer={offer} />
       </Card>
       <Card className="p-5">
-        <h2 className="font-heading text-lg font-semibold">Postback secret</h2>
+        <h2 className="font-heading text-lg font-semibold">Server-to-server postback</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Use this when the advertiser can fire a server postback. Keep the secret off public pages.
+        </p>
         <p className="mt-2 break-all font-mono text-sm">{secret || "No secret yet"}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {secret ? <CopyButton value={secret} label="Copy secret" /> : null}
@@ -41,6 +45,21 @@ export default async function EditOfferPage({ params }: { params: Promise<{ id: 
           </form>
         </div>
         <pre className="mt-4 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{postback}</pre>
+      </Card>
+      <Card className="p-5">
+        <h2 className="font-heading text-lg font-semibold">JavaScript tracking</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          For companies that will not change their backend. The script keeps the click id, then a JS postback fires on
+          thank-you. Works with React and Next.js. Partner-facing copy is at{" "}
+          <a href="/docs/javascript" className="text-primary hover:underline">
+            /docs/javascript
+          </a>
+          .
+        </p>
+        <p className="mt-3 font-mono text-xs text-muted-foreground">{origin}/t/sx.js</p>
+        <div className="mt-4">
+          <JsTrackingSnippets origin={origin} offerSlug={offer.slug} />
+        </div>
       </Card>
       <Card className="p-5">
         <h2 className="font-heading text-lg font-semibold">Add creative</h2>

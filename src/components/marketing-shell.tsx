@@ -60,6 +60,9 @@ export function MarketingFooter() {
           <Link href="/marketplace" className="hover:text-foreground">
             What you can promote
           </Link>
+          <Link href="/docs/javascript" className="hover:text-foreground">
+            JavaScript tracking
+          </Link>
           <a href="https://synterax.io" className="hover:text-foreground">
             SynteraX
           </a>
