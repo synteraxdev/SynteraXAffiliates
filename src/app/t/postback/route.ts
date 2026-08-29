@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { recordPostback } from "@/lib/data";
+import { normalizeTrackingEvent } from "@/lib/js-track";
 import { flushOutboundPostbacks } from "@/lib/outbound";
 
 function pick(source: Record<string, string>, keys: string[]): string | undefined {
@@ -45,6 +46,10 @@ async function handle(request: Request) {
       amountUsd: Number(pick(merged, ["amount", "amount_usd", "payout"]) || 0),
       status: pick(merged, ["status"]) || "pending",
       coupon: pick(merged, ["coupon", "coupon_code", "p_coupon"]),
+      conversionType: (() => {
+        const raw = pick(merged, ["type", "event", "conversion_type"]);
+        return raw ? normalizeTrackingEvent(raw) : undefined;
+      })(),
     });
     await flushOutboundPostbacks();
     return NextResponse.json(result);

@@ -10,9 +10,10 @@ export default async function AdminReportsPage() {
   return (
     <div className="space-y-6">
       <h1 className="font-heading text-3xl font-semibold">Network reports</h1>
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Clicks" value={String(stats.clicks)} />
-        <StatCard label="Conversions" value={String(stats.conversions)} />
+        <StatCard label="Signups" value={String(stats.signups)} />
+        <StatCard label="Paid" value={String(stats.conversions)} />
         <StatCard label="Commission" value={formatMoney(stats.approvedEarnings + stats.pendingEarnings)} />
       </div>
       <Card className="p-5">
@@ -21,7 +22,8 @@ export default async function AdminReportsPage() {
             <TableRow>
               <TableHead>Offer</TableHead>
               <TableHead>Clicks</TableHead>
-              <TableHead>Conversions</TableHead>
+              <TableHead>Signups</TableHead>
+              <TableHead>Paid</TableHead>
               <TableHead>CR</TableHead>
               <TableHead>Commission</TableHead>
             </TableRow>
@@ -31,8 +33,9 @@ export default async function AdminReportsPage() {
               <TableRow key={offer.id}>
                 <TableCell>{offer.name}</TableCell>
                 <TableCell>{offer.clicks}</TableCell>
-                <TableCell>{offer.conversions}</TableCell>
-                <TableCell>{conversionRate(offer.clicks, offer.conversions).toFixed(1)}%</TableCell>
+                <TableCell>{offer.signups}</TableCell>
+                <TableCell>{offer.paid}</TableCell>
+                <TableCell>{conversionRate(offer.clicks, offer.paid).toFixed(1)}%</TableCell>
                 <TableCell>{formatMoney(offer.commission)}</TableCell>
               </TableRow>
             ))}
@@ -45,7 +48,8 @@ export default async function AdminReportsPage() {
             <TableRow>
               <TableHead>Date</TableHead>
               <TableHead>Clicks</TableHead>
-              <TableHead>Conversions</TableHead>
+              <TableHead>Signups</TableHead>
+              <TableHead>Paid</TableHead>
               <TableHead>Commission</TableHead>
             </TableRow>
           </TableHeader>
@@ -54,6 +58,7 @@ export default async function AdminReportsPage() {
               <TableRow key={day.date}>
                 <TableCell className="font-mono text-sm">{day.date}</TableCell>
                 <TableCell>{day.clicks}</TableCell>
+                <TableCell>{day.signups}</TableCell>
                 <TableCell>{day.conversions}</TableCell>
                 <TableCell>{formatMoney(day.commission)}</TableCell>
               </TableRow>

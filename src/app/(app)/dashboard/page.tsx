@@ -37,13 +37,13 @@ export default async function DashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="People who clicked" value={String(stats.clicks)} />
+        <StatCard label="Signups" value={String(stats.signups)} hint="Account created, not paid yet" />
         <StatCard
-          label="Signups waiting"
-          value={String(stats.pending)}
-          hint="We hold these a few days, like other networks"
+          label="Paid conversions"
+          value={String(stats.conversions)}
+          hint={stats.pending ? `${stats.pending} still on hold` : "Purchases attributed to your links"}
         />
         <StatCard label="Ready to cash out" value={formatMoney(stats.availableEarnings)} />
-        <StatCard label="Already paid" value={formatMoney(stats.paidEarnings)} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">

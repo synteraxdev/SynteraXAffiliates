@@ -25,7 +25,8 @@ export default async function AdminHomePage() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Network clicks" value={String(stats.clicks)} />
-        <StatCard label="Conversions" value={String(stats.conversions)} />
+        <StatCard label="Signups" value={String(stats.signups)} />
+        <StatCard label="Paid conversions" value={String(stats.conversions)} />
         <StatCard label="Approved commission" value={formatMoney(stats.approvedEarnings)} />
         <StatCard label="Open fraud events" value={String(fraud.filter((row) => row.status === "open").length)} />
       </div>

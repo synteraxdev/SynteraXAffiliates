@@ -41,7 +41,7 @@ export function OfferForm({ offer }: { offer?: Offer }) {
         label="Conversion type"
         name="conversion_type"
         defaultValue={offer?.conversion_type || "postback"}
-        options={["postback", "js", "pixel", "signup", "plan_order", "none"]}
+        options={["postback", "js", "paid", "signup", "pixel", "plan_order", "none"]}
       />
       <SelectField
         label="Payout model"

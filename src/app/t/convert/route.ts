@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { recordConversionFromClick } from "@/lib/data";
+import { recordTrackingEvent } from "@/lib/data";
 import { parseTrackingBody, parseTrackingFields, trackingCorsHeaders } from "@/lib/js-track";
 import { flushOutboundPostbacks } from "@/lib/outbound";
 
@@ -31,18 +31,21 @@ async function handle(request: Request) {
   if (!payload.clickId) return json({ ok: false, error: "missing_click" }, 400);
 
   try {
-    const result = await recordConversionFromClick({
+    const result = await recordTrackingEvent({
+      eventType: payload.type,
       clickId: payload.clickId,
-      conversionType: payload.type || "js",
       externalId: payload.externalId,
       amountUsd: payload.amountUsd,
+      source: "js",
       metadata: {
-        source: "js",
         offer: payload.offer || null,
         ref: payload.ref || null,
         status: payload.status,
       },
     });
+    if (result && typeof result === "object" && "ok" in result && result.ok === false) {
+      return json(result, 400);
+    }
     await flushOutboundPostbacks();
     return json({ ok: true, ...(result && typeof result === "object" ? result : { result }) });
   } catch (error) {

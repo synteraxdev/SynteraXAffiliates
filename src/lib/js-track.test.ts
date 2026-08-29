@@ -3,6 +3,9 @@ import {
   buildTrackerScript,
   convertEndpoint,
   javascriptTrackingSnippets,
+  isPayableConversionType,
+  isSignupConversionType,
+  normalizeTrackingEvent,
   parseTrackingBody,
   parseTrackingFields,
   trackerScriptSrc,
@@ -24,7 +27,18 @@ describe("parseTrackingFields", () => {
     expect(parsed.amountUsd).toBe(25.5);
     expect(parsed.externalId).toBe("ord_9");
     expect(parsed.offer).toBe("debit-card");
-    expect(parsed.type).toBe("js");
+    expect(parsed.type).toBe("paid");
+  });
+
+  it("maps event aliases to click, signup, or paid", () => {
+    expect(normalizeTrackingEvent("landing")).toBe("click");
+    expect(normalizeTrackingEvent("register")).toBe("signup");
+    expect(normalizeTrackingEvent("sale")).toBe("paid");
+    expect(parseTrackingFields({ type: "signup" }).type).toBe("signup");
+    expect(parseTrackingFields({ conversion_type: "click" }).type).toBe("click");
+    expect(isSignupConversionType("signup")).toBe(true);
+    expect(isPayableConversionType("paid")).toBe(true);
+    expect(isPayableConversionType("signup")).toBe(false);
   });
 });
 
@@ -51,6 +65,8 @@ describe("tracker script", () => {
     expect(script).toContain("push: function");
     expect(script).toContain("w.SX = api");
     expect(script).toContain("data-convert");
+    expect(script).toContain("signup");
+    expect(script).toContain('return "click"');
     expect(script).not.toContain("document.write");
   });
 
@@ -58,7 +74,8 @@ describe("tracker script", () => {
     const snippets = javascriptTrackingSnippets("https://affiliates.synterax.io", "debit-card");
     expect(snippets.scriptSrc).toBe("https://affiliates.synterax.io/t/sx.js");
     expect(snippets.landing).toContain("/t/sx.js");
-    expect(snippets.convert).toContain("SX.push");
+    expect(snippets.signup).toContain('["signup"');
+    expect(snippets.convert).toContain('["paid"');
     expect(snippets.nextApp).toContain("next/script");
     expect(snippets.nextApp).toContain("afterInteractive");
     expect(snippets.react).toContain("useEffect");

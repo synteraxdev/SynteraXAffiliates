@@ -1,4 +1,5 @@
 import { getServiceDb } from "@/lib/supabase";
+import { isPayableConversionType, isSignupConversionType } from "@/lib/js-track";
 import type { SessionUser } from "@/lib/session";
 import type { SynteraRole, SynteraStatus } from "@/lib/roles";
 
@@ -182,6 +183,7 @@ export async function recordPostback(input: {
   amountUsd?: number;
   status?: string;
   coupon?: string;
+  conversionType?: string;
 }) {
   const db = getServiceDb();
   const { data, error } = await db.rpc("record_postback", {
@@ -193,6 +195,7 @@ export async function recordPostback(input: {
     p_amount_usd: input.amountUsd ?? 0,
     p_status: input.status ?? "pending",
     p_coupon: input.coupon ?? null,
+    p_conversion_type: input.conversionType ?? null,
   });
   if (error) throw new Error(error.message);
   return data;
@@ -217,24 +220,73 @@ export async function recordConversionFromClick(input: {
   return data;
 }
 
+export async function recordTrackingEvent(input: {
+  eventType: "click" | "signup" | "paid";
+  clickId: string;
+  externalId?: string;
+  amountUsd?: number;
+  source?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  const db = getServiceDb();
+  const { data: click, error: clickError } = await db
+    .from("clicks")
+    .select("click_id, offer_id, promoter_id")
+    .eq("click_id", input.clickId)
+    .maybeSingle();
+  if (clickError) throw new Error(clickError.message);
+  if (!click) throw new Error("unknown_click");
+
+  const { error: eventError } = await db.from("tracking_events").insert({
+    event_type: input.eventType,
+    click_id: click.click_id,
+    offer_id: click.offer_id,
+    promoter_id: click.promoter_id,
+    external_id: input.externalId ?? null,
+    amount_usd: input.amountUsd ?? 0,
+    source: input.source ?? "js",
+    metadata: input.metadata ?? {},
+  });
+  if (eventError) throw new Error(eventError.message);
+
+  if (input.eventType === "click") {
+    return { ok: true, event: "click" as const };
+  }
+
+  return recordConversionFromClick({
+    clickId: input.clickId,
+    conversionType: input.eventType,
+    externalId: input.externalId,
+    amountUsd: input.eventType === "paid" ? input.amountUsd ?? 0 : 0,
+    metadata: { ...(input.metadata ?? {}), source: input.source ?? "js", event: input.eventType },
+  });
+}
+
 export async function dashboardStats(promoterId?: string) {
   const db = getServiceDb();
   const clickQuery = db.from("clicks").select("id, flagged, created_at, offer_id, promoter_id", { count: "exact" });
-  const convQuery = db.from("conversions").select("id, status, commission_usd, amount_usd, created_at, offer_id, promoter_id", { count: "exact" });
+  const convQuery = db
+    .from("conversions")
+    .select("id, status, conversion_type, commission_usd, amount_usd, created_at, offer_id, promoter_id", {
+      count: "exact",
+    });
   if (promoterId) {
     clickQuery.eq("promoter_id", promoterId);
     convQuery.eq("promoter_id", promoterId);
   }
   const [{ count: clickCount }, { data: conversions }] = await Promise.all([clickQuery, convQuery]);
   const rows = conversions || [];
-  const approved = rows.filter((row) => row.status === "approved" || row.status === "paid");
-  const payable = rows.filter((row) => row.status === "approved");
-  const pending = rows.filter((row) => row.status === "pending");
-  const paid = rows.filter((row) => row.status === "paid");
+  const signups = rows.filter((row) => isSignupConversionType(row.conversion_type));
+  const paidEvents = rows.filter((row) => isPayableConversionType(row.conversion_type));
+  const approved = paidEvents.filter((row) => row.status === "approved" || row.status === "paid");
+  const payable = paidEvents.filter((row) => row.status === "approved");
+  const pending = paidEvents.filter((row) => row.status === "pending");
+  const paid = paidEvents.filter((row) => row.status === "paid");
   const commission = (list: typeof rows) => list.reduce((sum, row) => sum + Number(row.commission_usd || 0), 0);
   return {
     clicks: clickCount || 0,
-    conversions: rows.length,
+    signups: signups.length,
+    conversions: paidEvents.length,
     pending: pending.length,
     approved: approved.length,
     pendingEarnings: commission(pending),
@@ -277,20 +329,24 @@ export async function offerPerformance(promoterId?: string) {
   const results = await Promise.all(
     offers.map(async (offer) => {
       let clickQuery = db.from("clicks").select("id", { count: "exact", head: true }).eq("offer_id", offer.id);
-      let convQuery = db.from("conversions").select("commission_usd, status").eq("offer_id", offer.id);
+      let convQuery = db.from("conversions").select("commission_usd, status, conversion_type").eq("offer_id", offer.id);
       if (promoterId) {
         clickQuery = clickQuery.eq("promoter_id", promoterId);
         convQuery = convQuery.eq("promoter_id", promoterId);
       }
       const [{ count }, { data: conversions }] = await Promise.all([clickQuery, convQuery]);
       const rows = conversions || [];
+      const signups = rows.filter((row) => isSignupConversionType(row.conversion_type)).length;
+      const paid = rows.filter((row) => isPayableConversionType(row.conversion_type)).length;
       const commission = rows
         .filter((row) => !["rejected", "refunded", "clawed_back"].includes(String(row.status)))
         .reduce((sum, row) => sum + Number(row.commission_usd || 0), 0);
       return {
         ...offer,
         clicks: count || 0,
-        conversions: rows.length,
+        signups,
+        paid,
+        conversions: paid,
         commission,
       };
     }),
@@ -516,16 +572,22 @@ export async function reportByDay(promoterId?: string, days = 14) {
   const db = getServiceDb();
   const since = new Date(Date.now() - days * 86400000).toISOString();
   let clickQuery = db.from("clicks").select("created_at").gte("created_at", since);
-  let convQuery = db.from("conversions").select("created_at, commission_usd, status").gte("created_at", since);
+  let convQuery = db
+    .from("conversions")
+    .select("created_at, commission_usd, status, conversion_type")
+    .gte("created_at", since);
   if (promoterId) {
     clickQuery = clickQuery.eq("promoter_id", promoterId);
     convQuery = convQuery.eq("promoter_id", promoterId);
   }
   const [{ data: clicks }, { data: conversions }] = await Promise.all([clickQuery, convQuery]);
-  const map = new Map<string, { date: string; clicks: number; conversions: number; commission: number }>();
+  const map = new Map<
+    string,
+    { date: string; clicks: number; signups: number; conversions: number; commission: number }
+  >();
   for (let i = days - 1; i >= 0; i--) {
     const date = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
-    map.set(date, { date, clicks: 0, conversions: 0, commission: 0 });
+    map.set(date, { date, clicks: 0, signups: 0, conversions: 0, commission: 0 });
   }
   for (const click of clicks || []) {
     const date = String(click.created_at).slice(0, 10);
@@ -536,7 +598,8 @@ export async function reportByDay(promoterId?: string, days = 14) {
     const date = String(conversion.created_at).slice(0, 10);
     const row = map.get(date);
     if (row) {
-      row.conversions += 1;
+      if (isSignupConversionType(conversion.conversion_type)) row.signups += 1;
+      if (isPayableConversionType(conversion.conversion_type)) row.conversions += 1;
       if (!["rejected", "refunded", "clawed_back"].includes(String(conversion.status))) {
         row.commission += Number(conversion.commission_usd || 0);
       }

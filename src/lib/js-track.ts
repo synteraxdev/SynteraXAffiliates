@@ -2,11 +2,13 @@ const FIELD_ALIASES = {
   clickId: ["click_id", "sx_click", "p_click_id", "clickId"],
   offer: ["offer", "offer_slug", "sx_offer", "p_offer_slug"],
   ref: ["ref", "ref_slug", "p_ref_slug"],
-  externalId: ["external_id", "txn_id", "order_id", "externalId"],
+  externalId: ["external_id", "txn_id", "order_id", "externalId", "userId", "user_id"],
   amount: ["amount", "amount_usd", "payout"],
   status: ["status"],
-  type: ["type", "event"],
+  type: ["type", "event", "conversion_type"],
 } as const;
+
+export type TrackingEventType = "click" | "signup" | "paid";
 
 export type JsConvertPayload = {
   clickId?: string;
@@ -15,8 +17,18 @@ export type JsConvertPayload = {
   externalId?: string;
   amountUsd: number;
   status: string;
-  type: string;
+  type: TrackingEventType;
 };
+
+export function normalizeTrackingEvent(value?: string | null): TrackingEventType {
+  const raw = (value || "").trim().toLowerCase();
+  if (raw === "click" || raw === "landing" || raw === "visit") return "click";
+  if (raw === "signup" || raw === "register" || raw === "lead" || raw === "cpl") return "signup";
+  if (raw === "paid" || raw === "sale" || raw === "purchase" || raw === "convert" || raw === "js" || raw === "postback") {
+    return "paid";
+  }
+  return "paid";
+}
 
 export function pickField(source: Record<string, string>, keys: readonly string[]): string | undefined {
   for (const key of keys) {
@@ -35,7 +47,7 @@ export function parseTrackingFields(source: Record<string, string>): JsConvertPa
     externalId: pickField(source, FIELD_ALIASES.externalId),
     amountUsd: Number(amountRaw || 0) || 0,
     status: pickField(source, FIELD_ALIASES.status) || "pending",
-    type: pickField(source, FIELD_ALIASES.type) || "js",
+    type: normalizeTrackingEvent(pickField(source, FIELD_ALIASES.type)),
   };
 }
 
@@ -64,6 +76,28 @@ export function trackingCorsHeaders(): Record<string, string> {
   };
 }
 
+export function trackingEventLabel(type: string | null | undefined) {
+  switch ((type || "").toLowerCase()) {
+    case "click":
+      return "Click";
+    case "signup":
+      return "Signup";
+    case "paid":
+      return "Paid";
+    default:
+      return type || "Event";
+  }
+}
+
+export function isSignupConversionType(type?: string | null) {
+  return (type || "").toLowerCase() === "signup";
+}
+
+export function isPayableConversionType(type?: string | null) {
+  const value = (type || "").toLowerCase();
+  return value !== "signup" && value !== "click";
+}
+
 export function trackerScriptSrc(origin: string) {
   return `${origin.replace(/\/$/, "")}/t/sx.js`;
 }
@@ -76,10 +110,15 @@ export function javascriptTrackingSnippets(origin: string, offerSlug = "") {
   const scriptSrc = trackerScriptSrc(origin);
   const offer = offerSlug || "OFFER_SLUG";
   const landing = `<script src="${scriptSrc}" async></script>`;
+  const signup = `<script src="${scriptSrc}"></script>
+<script>
+  window.SX = window.SX || [];
+  SX.push(["signup", { offer: "${offer}", externalId: USER_ID }]);
+</script>`;
   const convert = `<script src="${scriptSrc}"></script>
 <script>
   window.SX = window.SX || [];
-  SX.push(["convert", {
+  SX.push(["paid", {
     offer: "${offer}",
     amount: ORDER_TOTAL,
     externalId: ORDER_ID
@@ -91,7 +130,19 @@ export function SynteraTracker() {
   return <Script src="${scriptSrc}" strategy="afterInteractive" />;
 }
 
-export function SynteraConvert({ amount, externalId }: { amount?: number; externalId?: string }) {
+export function SynteraSignup({ userId }: { userId: string }) {
+  const payload = JSON.stringify({ offer: "${offer}", externalId: userId });
+  return (
+    <>
+      <Script src="${scriptSrc}" strategy="afterInteractive" />
+      <Script id="sx-signup" strategy="afterInteractive">
+        {\`window.SX=window.SX||[];SX.push(["signup",\${payload}]);\`}
+      </Script>
+    </>
+  );
+}
+
+export function SynteraPaid({ amount, externalId }: { amount?: number; externalId?: string }) {
   const payload = JSON.stringify({
     offer: "${offer}",
     amount: amount ?? 0,
@@ -100,23 +151,22 @@ export function SynteraConvert({ amount, externalId }: { amount?: number; extern
   return (
     <>
       <Script src="${scriptSrc}" strategy="afterInteractive" />
-      <Script id="sx-convert" strategy="afterInteractive">
-        {\`window.SX=window.SX||[];SX.push(["convert",\${payload}]);\`}
+      <Script id="sx-paid" strategy="afterInteractive">
+        {\`window.SX=window.SX||[];SX.push(["paid",\${payload}]);\`}
       </Script>
     </>
   );
 }`;
   const react = `useEffect(() => {
-  const payload = { offer: "${offer}", amount, externalId: orderId };
-  const sx = window.SX;
-  if (sx && typeof sx.convert === "function") {
-    sx.convert(payload);
-    return;
-  }
   window.SX = window.SX || [];
-  window.SX.push(["convert", payload]);
+  window.SX.push(["signup", { offer: "${offer}", externalId: userId }]);
+}, [userId]);
+
+useEffect(() => {
+  window.SX = window.SX || [];
+  window.SX.push(["paid", { offer: "${offer}", amount, externalId: orderId }]);
 }, [orderId, amount]);`;
-  return { scriptSrc, landing, convert, nextApp, react };
+  return { scriptSrc, landing, signup, convert, nextApp, react };
 }
 
 export function buildTrackerScript(origin: string) {
@@ -158,16 +208,23 @@ export function buildTrackerScript(origin: string) {
   if (ref) store(KEYS.ref, ref);
   if (offer) store(KEYS.offer, offer);
 
-  function payload(extra) {
+  function eventName(value) {
+    var raw = String(value || "").toLowerCase();
+    if (raw === "click" || raw === "landing" || raw === "visit") return "click";
+    if (raw === "signup" || raw === "register" || raw === "lead" || raw === "cpl") return "signup";
+    return "paid";
+  }
+
+  function payload(extra, kind) {
     extra = extra || {};
     return {
       click_id: extra.clickId || extra.click_id || extra.sx_click || read(KEYS.click),
       ref: extra.ref || read(KEYS.ref),
       offer: extra.offer || read(KEYS.offer),
-      external_id: extra.externalId || extra.external_id || extra.txn_id || extra.order_id || "",
+      external_id: extra.externalId || extra.external_id || extra.txn_id || extra.order_id || extra.userId || extra.user_id || "",
       amount: extra.amount != null ? extra.amount : (extra.payout != null ? extra.payout : ""),
       status: extra.status || "pending",
-      type: extra.type || "js"
+      type: eventName(extra.type || extra.event || kind || "paid")
     };
   }
 
@@ -199,20 +256,29 @@ export function buildTrackerScript(origin: string) {
     if (cb) cb({ ok: !!sent });
   }
 
-  function convert(opts, cb) {
-    var data = payload(opts);
+  function track(kind, opts, cb) {
+    var data = payload(opts, kind);
     if (!data.click_id) {
       var missing = { ok: false, error: "missing_click" };
       if (cb) cb(missing);
       return missing;
     }
     send(data, cb);
-    return { ok: true, queued: true, click_id: data.click_id };
+    return { ok: true, queued: true, click_id: data.click_id, type: data.type };
   }
+
+  function convert(opts, cb) { return track("paid", opts, cb); }
+  function click(opts, cb) { return track("click", opts, cb); }
+  function signup(opts, cb) { return track("signup", opts, cb); }
+  function paid(opts, cb) { return track("paid", opts, cb); }
 
   var api = {
     getClickId: function () { return read(KEYS.click); },
     getRef: function () { return read(KEYS.ref); },
+    track: track,
+    click: click,
+    signup: signup,
+    paid: paid,
     convert: convert,
     ready: function (fn) { if (fn) fn(api); },
     push: function (cmd) {
@@ -220,7 +286,10 @@ export function buildTrackerScript(origin: string) {
       if (typeof cmd === "function") { cmd(api); return; }
       var name = Array.isArray(cmd) ? cmd[0] : cmd;
       var args = Array.isArray(cmd) ? cmd.slice(1) : [];
-      if (name === "convert") convert(args[0], args[1]);
+      if (name === "track") track(args[0], args[1], args[2]);
+      else if (name === "click") click(args[0], args[1]);
+      else if (name === "signup") signup(args[0], args[1]);
+      else if (name === "paid" || name === "convert") paid(args[0], args[1]);
       else if (name === "ready") args[0] && args[0](api);
       else if (name === "init") {
         var cfg = args[0] || {};
@@ -238,14 +307,25 @@ export function buildTrackerScript(origin: string) {
     for (var i = 0; i < queued.length; i++) api.push(queued[i]);
   }
 
+  try {
+    var already = w.sessionStorage && w.sessionStorage.getItem("sx_click_sent");
+    if (read(KEYS.click) && already !== read(KEYS.click)) {
+      if (w.sessionStorage) w.sessionStorage.setItem("sx_click_sent", read(KEYS.click));
+      click();
+    }
+  } catch (e) {}
+
   var tag = d.currentScript;
-  if (tag && tag.getAttribute("data-convert") === "1") {
-    convert({
-      amount: tag.getAttribute("data-amount"),
-      externalId: tag.getAttribute("data-external-id") || tag.getAttribute("data-externalId"),
-      offer: tag.getAttribute("data-offer"),
-      status: tag.getAttribute("data-status") || "pending"
-    });
+  if (tag) {
+    var auto = tag.getAttribute("data-event") || (tag.getAttribute("data-convert") === "1" ? "paid" : "");
+    if (auto) {
+      track(auto, {
+        amount: tag.getAttribute("data-amount"),
+        externalId: tag.getAttribute("data-external-id") || tag.getAttribute("data-externalId"),
+        offer: tag.getAttribute("data-offer"),
+        status: tag.getAttribute("data-status") || "pending"
+      });
+    }
   }
 })(window, document);
 `;

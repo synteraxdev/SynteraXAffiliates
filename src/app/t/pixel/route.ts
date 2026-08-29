@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { recordConversionFromClick, recordPostback } from "@/lib/data";
+import { recordConversionFromClick, recordPostback, recordTrackingEvent } from "@/lib/data";
+import { normalizeTrackingEvent } from "@/lib/js-track";
 
 const PIXEL = Buffer.from(
   "R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==",
@@ -13,6 +14,7 @@ export async function GET(request: Request) {
   const offer = url.searchParams.get("offer") || undefined;
 
   try {
+    const rawType = url.searchParams.get("type") || url.searchParams.get("event");
     if (secret) {
       await recordPostback({
         offer,
@@ -22,11 +24,20 @@ export async function GET(request: Request) {
         externalId: url.searchParams.get("external_id") || undefined,
         amountUsd: Number(url.searchParams.get("amount") || 0),
         status: url.searchParams.get("status") || "pending",
+        conversionType: rawType ? normalizeTrackingEvent(rawType) : undefined,
+      });
+    } else if (clickId && rawType) {
+      await recordTrackingEvent({
+        eventType: normalizeTrackingEvent(rawType),
+        clickId,
+        externalId: url.searchParams.get("external_id") || undefined,
+        amountUsd: Number(url.searchParams.get("amount") || 0),
+        source: "pixel",
       });
     } else if (clickId) {
       await recordConversionFromClick({
         clickId,
-        conversionType: url.searchParams.get("type") || "pixel",
+        conversionType: "pixel",
         externalId: url.searchParams.get("external_id") || undefined,
         amountUsd: Number(url.searchParams.get("amount") || 0),
       });

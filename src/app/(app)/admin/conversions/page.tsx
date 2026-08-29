@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { listConversions } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 import { formatDateTime } from "@/lib/format";
+import { trackingEventLabel } from "@/lib/js-track";
 import { holdLabel } from "@/lib/network";
 
 export default async function AdminConversionsPage() {
@@ -26,6 +27,7 @@ export default async function AdminConversionsPage() {
               <TableHead>When</TableHead>
               <TableHead>Affiliate</TableHead>
               <TableHead>Offer</TableHead>
+              <TableHead>Event</TableHead>
               <TableHead>Commission</TableHead>
               <TableHead>Hold / status</TableHead>
               <TableHead />
@@ -37,6 +39,7 @@ export default async function AdminConversionsPage() {
                 <TableCell>{formatDateTime(row.created_at)}</TableCell>
                 <TableCell>{row.profiles?.username || row.profiles?.email}</TableCell>
                 <TableCell>{row.offers?.name}</TableCell>
+                <TableCell>{trackingEventLabel(row.conversion_type)}</TableCell>
                 <TableCell>{formatMoney(row.commission_usd)}</TableCell>
                 <TableCell>
                   <Badge variant="secondary">{holdLabel(row.held_until, row.status)}</Badge>

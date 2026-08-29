@@ -17,7 +17,8 @@ export default async function EditOfferPage({ params }: { params: Promise<{ id: 
   if (!offer) notFound();
   const [secret, creatives] = await Promise.all([getOfferSecret(offer.id), listCreatives(offer.id)]);
   const origin = appOrigin();
-  const postback = `${origin}/t/postback?offer=${offer.slug}&secret=${secret || "SECRET"}&click_id={clickid}&external_id={txn}&amount={payout}&status=approved`;
+  const postback = `${origin}/t/postback?offer=${offer.slug}&secret=${secret || "SECRET"}&click_id={clickid}&type=paid&external_id={txn}&amount={payout}&status=approved`;
+  const signupPostback = `${origin}/t/postback?offer=${offer.slug}&secret=${secret || "SECRET"}&click_id={clickid}&type=signup&external_id={userid}`;
 
   return (
     <div className="space-y-6">
@@ -44,13 +45,16 @@ export default async function EditOfferPage({ params }: { params: Promise<{ id: 
             </Button>
           </form>
         </div>
-        <pre className="mt-4 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{postback}</pre>
+        <p className="mt-4 text-xs uppercase tracking-[0.16em] text-muted-foreground">Signup</p>
+        <pre className="mt-2 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{signupPostback}</pre>
+        <p className="mt-4 text-xs uppercase tracking-[0.16em] text-muted-foreground">Paid</p>
+        <pre className="mt-2 overflow-auto rounded-md bg-background/70 p-3 font-mono text-xs">{postback}</pre>
       </Card>
       <Card className="p-5">
         <h2 className="font-heading text-lg font-semibold">JavaScript tracking</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          For companies that will not change their backend. The script keeps the click id, then a JS postback fires on
-          thank-you. Works with React and Next.js. Partner-facing copy is at{" "}
+          For companies that will not change their backend. Track click, signup, and paid from the browser. Works with
+          React and Next.js. Partner-facing copy is at{" "}
           <a href="/docs/javascript" className="text-primary hover:underline">
             /docs/javascript
           </a>

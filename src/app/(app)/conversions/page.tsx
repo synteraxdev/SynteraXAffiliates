@@ -6,6 +6,7 @@ import { listConversions } from "@/lib/data";
 import { formatMoney } from "@/lib/affiliate";
 import { formatDateTime } from "@/lib/format";
 import { holdLabel } from "@/lib/network";
+import { trackingEventLabel } from "@/lib/js-track";
 import { conversionStatusLabel } from "@/lib/payouts";
 import { getSession } from "@/lib/session";
 
@@ -29,6 +30,7 @@ export default async function ConversionsPage() {
             <TableRow>
               <TableHead>When</TableHead>
               <TableHead>Offer</TableHead>
+              <TableHead>Event</TableHead>
               <TableHead>You earn</TableHead>
               <TableHead>
                 <HelpTip label="Status">Waiting means we are still checking. Ready to cash out means it can be paid.</HelpTip>
@@ -40,6 +42,7 @@ export default async function ConversionsPage() {
               <TableRow key={row.id}>
                 <TableCell>{formatDateTime(row.created_at)}</TableCell>
                 <TableCell>{row.offers?.name}</TableCell>
+                <TableCell>{trackingEventLabel(row.conversion_type)}</TableCell>
                 <TableCell>{formatMoney(row.commission_usd)}</TableCell>
                 <TableCell>
                   <Badge
@@ -54,7 +57,7 @@ export default async function ConversionsPage() {
             ))}
             {!conversions.length ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-muted-foreground">
+                <TableCell colSpan={5} className="text-muted-foreground">
                   Nothing yet. Share a link from Promote and check back here.
                 </TableCell>
               </TableRow>

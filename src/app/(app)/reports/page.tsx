@@ -28,7 +28,7 @@ export default async function ReportsPage() {
         <StatCard label="People who clicked" value={String(stats.clicks)} />
         <StatCard
           label="Signup rate"
-          value={`${conversionRate(stats.clicks, stats.conversions).toFixed(1)}%`}
+          value={`${conversionRate(stats.clicks, stats.signups).toFixed(1)}%`}
           hint="People who clicked and then signed up"
         />
         <StatCard
@@ -45,6 +45,7 @@ export default async function ReportsPage() {
               <TableHead>Offer</TableHead>
               <TableHead>Visits</TableHead>
               <TableHead>Signups</TableHead>
+              <TableHead>Paid</TableHead>
               <TableHead>
                 <HelpTip label="Rate">Signups divided by clicks.</HelpTip>
               </TableHead>
@@ -56,8 +57,9 @@ export default async function ReportsPage() {
               <TableRow key={offer.id}>
                 <TableCell>{offer.name}</TableCell>
                 <TableCell>{offer.clicks}</TableCell>
-                <TableCell>{offer.conversions}</TableCell>
-                <TableCell>{conversionRate(offer.clicks, offer.conversions).toFixed(1)}%</TableCell>
+                <TableCell>{offer.signups}</TableCell>
+                <TableCell>{offer.paid}</TableCell>
+                <TableCell>{conversionRate(offer.clicks, offer.signups).toFixed(1)}%</TableCell>
                 <TableCell>{formatMoney(offer.commission)}</TableCell>
               </TableRow>
             ))}
@@ -72,6 +74,7 @@ export default async function ReportsPage() {
               <TableHead>Date</TableHead>
               <TableHead>Visits</TableHead>
               <TableHead>Signups</TableHead>
+              <TableHead>Paid</TableHead>
               <TableHead>Earned</TableHead>
             </TableRow>
           </TableHeader>
@@ -80,6 +83,7 @@ export default async function ReportsPage() {
               <TableRow key={day.date}>
                 <TableCell>{day.date}</TableCell>
                 <TableCell>{day.clicks}</TableCell>
+                <TableCell>{day.signups}</TableCell>
                 <TableCell>{day.conversions}</TableCell>
                 <TableCell>{formatMoney(day.commission)}</TableCell>
               </TableRow>
